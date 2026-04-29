@@ -1,0 +1,145 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\infraestructure\\data\\repositories\\customerrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:infraestructure\\data\\repositories\\customerrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\application\\services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:application\\services\\reportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\application\\services\\customerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:application\\services\\customerservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\controllers\\expensecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:controllers\\expensecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\application\\services\\expenseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:application\\services\\expenseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|c:\\users\\juanma\\source\\repos\\fix-log-api\\domain\\entities\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1268970C-CBFC-AD16-0621-E16B409E702D}|fix-log-api.csproj|solutionrelative:domain\\entities\\report.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 361,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CustomerService.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\CustomerService.cs",
+              "RelativeDocumentMoniker": "Application\\Services\\CustomerService.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\CustomerService.cs",
+              "RelativeToolTip": "Application\\Services\\CustomerService.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABUAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-25T12:46:58.985Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T17:53:22.506Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ExpenseService.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\ExpenseService.cs",
+              "RelativeDocumentMoniker": "Application\\Services\\ExpenseService.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\ExpenseService.cs",
+              "RelativeToolTip": "Application\\Services\\ExpenseService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIsAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T17:52:34.051Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Report.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Domain\\Entities\\Report.cs",
+              "RelativeDocumentMoniker": "Domain\\Entities\\Report.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Domain\\Entities\\Report.cs",
+              "RelativeToolTip": "Domain\\Entities\\Report.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T18:04:43.236Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 361,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CustomerRepository.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Infraestructure\\Data\\Repositories\\CustomerRepository.cs",
+              "RelativeDocumentMoniker": "Infraestructure\\Data\\Repositories\\CustomerRepository.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Infraestructure\\Data\\Repositories\\CustomerRepository.cs",
+              "RelativeToolTip": "Infraestructure\\Data\\Repositories\\CustomerRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-25T12:48:24.933Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ExpenseController.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Controllers\\ExpenseController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ExpenseController.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Controllers\\ExpenseController.cs",
+              "RelativeToolTip": "Controllers\\ExpenseController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T17:52:39.435Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ReportService.cs",
+              "DocumentMoniker": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\ReportService.cs",
+              "RelativeDocumentMoniker": "Application\\Services\\ReportService.cs",
+              "ToolTip": "C:\\Users\\juanma\\source\\repos\\fix-log-api\\Application\\Services\\ReportService.cs",
+              "RelativeToolTip": "Application\\Services\\ReportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-24T18:03:24.953Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
