@@ -39,6 +39,7 @@ class ReportProvider extends ChangeNotifier {
     String details,
     bool isCompleted,
     bool isPaid,
+    double cost,
   ) async {
     _setLoading(true);
     try {
@@ -48,6 +49,7 @@ class ReportProvider extends ChangeNotifier {
         details,
         isCompleted,
         isPaid,
+        cost,
       );
       _reports = [..._reports, report];
       _errorMessage = null;

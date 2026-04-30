@@ -117,8 +117,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                           flex: 3,
                           child: AppTextField(
                             controller: _priceController,
-                            label: 'Precio',
-                            prefixIcon: Icons.attach_money,
+                            label: 'Precio (Gs.)',
+                            prefixIcon: Icons.monetization_on_outlined,
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),

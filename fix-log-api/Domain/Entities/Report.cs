@@ -14,5 +14,7 @@
         public required bool IsCompleted { get; set; }
 
         public required bool IsPaid { get; set; }
+
+        public decimal Cost { get; set; }
     }
 }

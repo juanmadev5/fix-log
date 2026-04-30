@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/shimmer_list.dart';
@@ -43,9 +42,8 @@ class CustomersScreen extends StatelessWidget {
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-                    sliver: SliverList.separated(
+                    sliver: SliverList.builder(
                       itemCount: provider.customers.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 0),
                       itemBuilder: (_, i) =>
                           _CustomerCard(customer: provider.customers[i]),
                     ),
@@ -94,11 +92,11 @@ class _CustomerCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 22,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                backgroundColor: colorScheme.primaryContainer,
                 child: Text(
                   initials.toUpperCase(),
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -116,16 +114,11 @@ class _CustomerCard extends StatelessWidget {
                       const SizedBox(height: 1),
                       Row(
                         children: [
-                          Icon(
-                            Icons.phone_outlined,
-                            size: 12,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          Icon(Icons.phone_outlined, size: 12,
+                              color: colorScheme.onSurfaceVariant),
                           const SizedBox(width: 4),
-                          Text(
-                            customer.phoneNumber,
-                            style: textTheme.bodyMedium?.copyWith(fontSize: 12),
-                          ),
+                          Text(customer.phoneNumber,
+                              style: textTheme.bodyMedium?.copyWith(fontSize: 12)),
                         ],
                       ),
                     ],
@@ -136,36 +129,33 @@ class _CustomerCard extends StatelessWidget {
                 icon: Icon(Icons.more_vert, color: colorScheme.onSurfaceVariant),
                 onSelected: (value) async {
                   if (value == 'edit') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => CustomerFormScreen(customer: customer),
-                      ),
-                    );
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => CustomerFormScreen(customer: customer),
+                    ));
                   } else if (value == 'delete') {
                     final confirmed = await _confirmDelete(context, customer.name);
                     if (confirmed) await provider.deleteCustomer(customer.id);
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
                     value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 10),
-                        Text('Editar'),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 18),
+                      SizedBox(width: 10),
+                      Text('Editar'),
+                    ]),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                        SizedBox(width: 10),
-                        Text('Eliminar', style: TextStyle(color: AppColors.error)),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 18,
+                          color: Theme.of(context).colorScheme.error),
+                      const SizedBox(width: 10),
+                      Text('Eliminar',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    ]),
                   ),
                 ],
               ),
@@ -181,7 +171,8 @@ class _CustomerCard extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Eliminar cliente'),
-            content: Text('¿Eliminar a "$name"? Esta acción no se puede deshacer.'),
+            content:
+                Text('¿Eliminar a "$name"? Esta acción no se puede deshacer.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
@@ -189,10 +180,9 @@ class _CustomerCard extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: AppColors.error),
-                ),
+                child: Text('Eliminar',
+                    style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.error)),
               ),
             ],
           ),

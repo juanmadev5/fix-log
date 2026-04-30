@@ -1,4 +1,4 @@
-﻿using fix_log_api.Application.DTOs;
+using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
 using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
@@ -15,10 +15,11 @@ namespace fix_log_api.Application.Services
             var reportEntity = new Report
             {
                 CustomerId = dto.CustomerId,
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Details = dto.Details,
                 IsCompleted = dto.IsCompleted,
                 IsPaid = dto.IsPaid,
+                Cost = dto.Cost,
             };
 
             bool success = await _repository.Create(reportEntity);
@@ -38,7 +39,8 @@ namespace fix_log_api.Application.Services
                 reportEntity.Date,
                 reportEntity.Details,
                 reportEntity.IsCompleted,
-                reportEntity.IsPaid
+                reportEntity.IsPaid,
+                reportEntity.Cost
             );
 
             return new ActionResponse<ResponseReportDto>(
@@ -74,10 +76,11 @@ namespace fix_log_api.Application.Services
             {
                 Id = dto.Id,
                 CustomerId = dto.CustomerId,
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Details = dto.Details,
                 IsCompleted = dto.IsCompleted,
                 IsPaid = dto.IsPaid,
+                Cost = dto.Cost,
             };
 
             bool success = await _repository.Edit(reportEntity);
@@ -118,7 +121,8 @@ namespace fix_log_api.Application.Services
                     e.Date,
                     e.Details,
                     e.IsCompleted,
-                    e.IsPaid
+                    e.IsPaid,
+                    e.Cost
                 ))
                 .ToList();
 
@@ -148,7 +152,8 @@ namespace fix_log_api.Application.Services
                 report.Date,
                 report.Details,
                 report.IsCompleted,
-                report.IsPaid
+                report.IsPaid,
+                report.Cost
             );
 
             return new ActionResponse<ResponseReportDto?>(

@@ -70,6 +70,16 @@ class _ExpenseCard extends StatelessWidget {
 
   final Expense expense;
 
+  static String _formatGs(double value) {
+    final s = value.round().toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write('.');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.read<ExpenseProvider>();
@@ -82,8 +92,7 @@ class _ExpenseCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => ExpenseFormScreen(expense: expense),
-          ),
+              builder: (_) => ExpenseFormScreen(expense: expense)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -93,12 +102,12 @@ class _ExpenseCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.1),
+                  color: colorScheme.tertiaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.receipt_long_outlined,
-                  color: AppColors.warning,
+                  color: colorScheme.onTertiaryContainer,
                   size: 22,
                 ),
               ),
@@ -110,28 +119,25 @@ class _ExpenseCard extends StatelessWidget {
                     Text(expense.title, style: textTheme.titleMedium),
                     if (expense.details.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        expense.details,
-                        style: textTheme.bodyMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(expense.details,
+                          style: textTheme.bodyMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                     ],
                     const SizedBox(height: 4),
-                    Row(
+                    Wrap(
+                      spacing: 6,
                       children: [
                         _Chip(
-                          label: '\$${expense.price.toStringAsFixed(2)}',
+                          label: 'Gs. ${_formatGs(expense.price)}',
                           color: AppColors.success,
                         ),
-                        const SizedBox(width: 6),
                         _Chip(
                           label: 'x${expense.quantity}',
                           color: colorScheme.primary,
                         ),
-                        const SizedBox(width: 6),
                         _Chip(
-                          label: 'Total: \$${total.toStringAsFixed(2)}',
+                          label: 'Total: Gs. ${_formatGs(total)}',
                           color: AppColors.warning,
                         ),
                       ],
@@ -143,36 +149,34 @@ class _ExpenseCard extends StatelessWidget {
                 icon: Icon(Icons.more_vert, color: colorScheme.onSurfaceVariant),
                 onSelected: (value) async {
                   if (value == 'edit') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ExpenseFormScreen(expense: expense),
-                      ),
-                    );
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ExpenseFormScreen(expense: expense),
+                    ));
                   } else if (value == 'delete') {
-                    final confirmed = await _confirmDelete(context, expense.title);
+                    final confirmed =
+                        await _confirmDelete(context, expense.title);
                     if (confirmed) await provider.deleteExpense(expense.id);
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
                     value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 10),
-                        Text('Editar'),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 18),
+                      SizedBox(width: 10),
+                      Text('Editar'),
+                    ]),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                        SizedBox(width: 10),
-                        Text('Eliminar', style: TextStyle(color: AppColors.error)),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 18,
+                          color: Theme.of(context).colorScheme.error),
+                      const SizedBox(width: 10),
+                      Text('Eliminar',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    ]),
                   ),
                 ],
               ),
@@ -188,7 +192,8 @@ class _ExpenseCard extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Eliminar gasto'),
-            content: Text('¿Eliminar "$title"? Esta acción no se puede deshacer.'),
+            content: Text(
+                '¿Eliminar "$title"? Esta acción no se puede deshacer.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
@@ -196,10 +201,9 @@ class _ExpenseCard extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: AppColors.error),
-                ),
+                child: Text('Eliminar',
+                    style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.error)),
               ),
             ],
           ),
@@ -219,7 +223,7 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(

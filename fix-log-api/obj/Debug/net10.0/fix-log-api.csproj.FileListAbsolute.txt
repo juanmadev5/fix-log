@@ -385,3 +385,4 @@ C:/Users/juanma/source/repos/fix-log-api/obj/Debug/net10.0/ref/fix-log-api.dll
 /home/juanma/dev/fix-log/fix-log-api/obj/Debug/net10.0/fix-log-api.pdb
 /home/juanma/dev/fix-log/fix-log-api/obj/Debug/net10.0/fix-log-api.genruntimeconfig.cache
 /home/juanma/dev/fix-log/fix-log-api/obj/Debug/net10.0/ref/fix-log-api.dll
+/home/juanma/dev/fix-log/fix-log-api/obj/Debug/net10.0/fix-log-api.sourcelink.json

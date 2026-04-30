@@ -14,6 +14,7 @@ class ReportRepositoryImpl implements ReportRepository {
     String details,
     bool isCompleted,
     bool isPaid,
+    double cost,
   ) {
     return _dataSource.createReport(
       customerId,
@@ -21,6 +22,7 @@ class ReportRepositoryImpl implements ReportRepository {
       details,
       isCompleted,
       isPaid,
+      cost,
     );
   }
 

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("fix-log-api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16c5a59b4d54e753f42d6fcefb13331d2cb65fc0")]
 [assembly: System.Reflection.AssemblyProductAttribute("fix-log-api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("fix-log-api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

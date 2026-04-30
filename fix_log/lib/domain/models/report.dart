@@ -5,6 +5,7 @@ class Report {
   final String details;
   final bool isCompleted;
   final bool isPaid;
+  final double cost;
 
   Report({
     required this.id,
@@ -13,6 +14,7 @@ class Report {
     required this.details,
     required this.isCompleted,
     required this.isPaid,
+    this.cost = 0,
   });
 
   factory Report.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Report {
       details: json['details'] as String,
       isCompleted: json['isCompleted'] as bool,
       isPaid: json['isPaid'] as bool,
+      cost: (json['cost'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -34,6 +37,7 @@ class Report {
       'details': details,
       'isCompleted': isCompleted,
       'isPaid': isPaid,
+      'cost': cost,
     };
   }
 }

@@ -35,6 +35,7 @@ class ReportRemoteDataSource {
     String details,
     bool isCompleted,
     bool isPaid,
+    double cost,
   ) async {
     final uri = Uri.parse('$fixLogApiBaseUrl$reportsPath');
     final response = await _client.post(uri, {
@@ -43,6 +44,7 @@ class ReportRemoteDataSource {
       'details': details,
       'isCompleted': isCompleted,
       'isPaid': isPaid,
+      'cost': cost,
     });
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final apiResponse = ApiResponse.fromJson(

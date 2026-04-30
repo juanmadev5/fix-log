@@ -111,7 +111,7 @@ namespace fix_log_api.Application.Services
                     c.Name,
                     c.Email,
                     c.PhoneNumber,
-                    c.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid)).ToList() ?? []
+                    c.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid, r.Cost)).ToList() ?? []
                 ))
                 .ToList();
 
@@ -140,7 +140,7 @@ namespace fix_log_api.Application.Services
                 customer.Name,
                 customer.Email,
                 customer.PhoneNumber,
-                customer.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid)).ToList() ?? []
+                customer.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid, r.Cost)).ToList() ?? []
             );
 
             return new ActionResponse<ResponseCustomerDto?>(responseDto, "Cliente encontrado con éxito", Status.FOUND);

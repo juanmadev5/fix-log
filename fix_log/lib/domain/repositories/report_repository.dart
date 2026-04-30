@@ -8,6 +8,7 @@ abstract class ReportRepository {
     String details,
     bool isCompleted,
     bool isPaid,
+    double cost,
   );
   Future<Report> updateReport(Report report);
   Future<void> deleteReport(int id);

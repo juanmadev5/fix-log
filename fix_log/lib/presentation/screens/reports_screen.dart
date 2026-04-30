@@ -70,6 +70,16 @@ class _ReportCard extends StatelessWidget {
 
   final Report report;
 
+  static String _formatGs(double value) {
+    final s = value.round().toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write('.');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
   String _formatDate(DateTime date) {
     final d = date.toLocal();
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -85,9 +95,7 @@ class _ReportCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => ReportFormScreen(report: report),
-          ),
+          MaterialPageRoute(builder: (_) => ReportFormScreen(report: report)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -98,54 +106,40 @@ class _ReportCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  color: colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  Icons.bar_chart_outlined,
-                  color: colorScheme.primary,
-                  size: 22,
-                ),
+                child: Icon(Icons.bar_chart_outlined,
+                    color: colorScheme.onSecondaryContainer, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      report.details,
-                      style: textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(report.details,
+                        style: textTheme.titleMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          size: 12,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        Icon(Icons.calendar_today_outlined,
+                            size: 12, color: colorScheme.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text(
-                          _formatDate(report.date),
-                          style: textTheme.bodyMedium?.copyWith(fontSize: 12),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.person_outline,
-                          size: 12,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'ID: ${report.customerId}',
-                          style: textTheme.bodyMedium?.copyWith(fontSize: 12),
-                        ),
+                        Text(_formatDate(report.date),
+                            style: textTheme.bodyMedium?.copyWith(fontSize: 12)),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    _StatusChip(
+                      label: 'Gs. ${_formatGs(report.cost)}',
+                      color: colorScheme.primary,
+                      icon: Icons.monetization_on_outlined,
+                    ),
                     const SizedBox(height: 6),
-                    Row(
+                    Wrap(
+                      spacing: 6,
                       children: [
                         _StatusChip(
                           label: report.isCompleted ? 'Completado' : 'Pendiente',
@@ -156,12 +150,11 @@ class _ReportCard extends StatelessWidget {
                               ? Icons.check_circle_outline
                               : Icons.pending_outlined,
                         ),
-                        const SizedBox(width: 6),
                         _StatusChip(
                           label: report.isPaid ? 'Pagado' : 'Sin pagar',
                           color: report.isPaid
                               ? AppColors.success
-                              : AppColors.error,
+                              : colorScheme.error,
                           icon: report.isPaid
                               ? Icons.payments_outlined
                               : Icons.money_off_outlined,
@@ -175,36 +168,33 @@ class _ReportCard extends StatelessWidget {
                 icon: Icon(Icons.more_vert, color: colorScheme.onSurfaceVariant),
                 onSelected: (value) async {
                   if (value == 'edit') {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ReportFormScreen(report: report),
-                      ),
-                    );
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => ReportFormScreen(report: report),
+                    ));
                   } else if (value == 'delete') {
                     final confirmed = await _confirmDelete(context);
                     if (confirmed) await provider.deleteReport(report.id);
                   }
                 },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
                     value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_outlined, size: 18),
-                        SizedBox(width: 10),
-                        Text('Editar'),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.edit_outlined, size: 18),
+                      SizedBox(width: 10),
+                      Text('Editar'),
+                    ]),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                        SizedBox(width: 10),
-                        Text('Eliminar', style: TextStyle(color: AppColors.error)),
-                      ],
-                    ),
+                    child: Row(children: [
+                      Icon(Icons.delete_outline, size: 18,
+                          color: Theme.of(context).colorScheme.error),
+                      const SizedBox(width: 10),
+                      Text('Eliminar',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error)),
+                    ]),
                   ),
                 ],
               ),
@@ -220,7 +210,8 @@ class _ReportCard extends StatelessWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Eliminar reporte'),
-            content: const Text('¿Eliminar este reporte? Esta acción no se puede deshacer.'),
+            content: const Text(
+                '¿Eliminar este reporte? Esta acción no se puede deshacer.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(false),
@@ -228,10 +219,9 @@ class _ReportCard extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: AppColors.error),
-                ),
+                child: Text('Eliminar',
+                    style: TextStyle(
+                        color: Theme.of(ctx).colorScheme.error)),
               ),
             ],
           ),
@@ -256,7 +246,7 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -264,14 +254,9 @@ class _StatusChip extends StatelessWidget {
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontSize: 11, fontWeight: FontWeight.w600)),
         ],
       ),
     );
