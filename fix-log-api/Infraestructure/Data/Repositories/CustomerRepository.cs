@@ -1,4 +1,4 @@
-﻿using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,26 +41,30 @@ namespace fix_log_api.Infraestructure.Data.Repositories
         {
             int rowsAffected = await _context
                 .Set<Customer>()
-                .Where(r => r.Id == entity.Id)
+                .Where(r => r.Id == entity.Id && r.UserId == entity.UserId)
                 .ExecuteUpdateAsync(setters =>
                     setters
-                        .SetProperty(r => r.Name, r => entity.Name)
-                        .SetProperty(r => r.Email, r => entity.Email)
-                        .SetProperty(r => r.PhoneNumber, r => entity.PhoneNumber)
-                        .SetProperty(r => r.Reports, r => entity.Reports)
+                        .SetProperty(r => r.Name, entity.Name)
+                        .SetProperty(r => r.Email, entity.Email)
+                        .SetProperty(r => r.PhoneNumber, entity.PhoneNumber)
                 );
 
             return rowsAffected > 0;
         }
 
-        public async Task<List<Customer>?> GetAll()
+        public async Task<List<Customer>?> GetAll(int userId)
         {
-            return await _context.Set<Customer>().ToListAsync();
+            return await _context.Set<Customer>()
+                .Where(c => c.UserId == userId)
+                .Include(c => c.Reports)
+                .ToListAsync();
         }
 
         public async Task<Customer?> GetById(int id)
         {
-            return await _context.Set<Customer>().FindAsync(id);
+            return await _context.Set<Customer>()
+                .Include(c => c.Reports)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }

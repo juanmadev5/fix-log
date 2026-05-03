@@ -10,10 +10,11 @@ namespace fix_log_api.Application.Services
     {
         private readonly IReportRepository _repository = repository;
 
-        public async Task<ActionResponse<ResponseReportDto>> Create(CreateReportDto dto)
+        public async Task<ActionResponse<ResponseReportDto>> Create(CreateReportDto dto, int userId)
         {
             var reportEntity = new Report
             {
+                UserId = userId,
                 CustomerId = dto.CustomerId,
                 Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Details = dto.Details,
@@ -50,8 +51,19 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<bool>> Delete(int id)
+        public async Task<ActionResponse<bool>> Delete(int id, int userId)
         {
+            var report = await _repository.GetById(id);
+
+            if (report == null || report.UserId != userId)
+            {
+                return new ActionResponse<bool>(
+                    false,
+                    $"No se pudo eliminar el reporte. El ID {id} no fue encontrado.",
+                    Status.NOT_FOUND
+                );
+            }
+
             bool success = await _repository.Delete(id);
 
             if (!success)
@@ -70,11 +82,23 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<ResponseReportDto>> Edit(ResponseReportDto dto)
+        public async Task<ActionResponse<ResponseReportDto>> Edit(ResponseReportDto dto, int userId)
         {
+            var existing = await _repository.GetById(dto.Id);
+
+            if (existing == null || existing.UserId != userId)
+            {
+                return new ActionResponse<ResponseReportDto>(
+                    dto,
+                    "No se pudo actualizar el reporte. Es posible que el ID no exista.",
+                    Status.NOT_FOUND
+                );
+            }
+
             var reportEntity = new Report
             {
                 Id = dto.Id,
+                UserId = userId,
                 CustomerId = dto.CustomerId,
                 Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Details = dto.Details,
@@ -101,9 +125,9 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<List<ResponseReportDto>?>> GetAll()
+        public async Task<ActionResponse<List<ResponseReportDto>?>> GetAll(int userId)
         {
-            var reports = await _repository.GetAll();
+            var reports = await _repository.GetAll(userId);
 
             if (reports == null || reports.Count == 0)
             {
@@ -133,11 +157,11 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<ResponseReportDto?>> GetById(int id)
+        public async Task<ActionResponse<ResponseReportDto?>> GetById(int id, int userId)
         {
             var report = await _repository.GetById(id);
 
-            if (report == null)
+            if (report == null || report.UserId != userId)
             {
                 return new ActionResponse<ResponseReportDto?>(
                     null,
@@ -159,7 +183,7 @@ namespace fix_log_api.Application.Services
             return new ActionResponse<ResponseReportDto?>(
                 responseDto,
                 "Reporte encontrado con éxito",
-                Status.SUCCESS
+                Status.FOUND
             );
         }
     }

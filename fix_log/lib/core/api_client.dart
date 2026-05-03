@@ -9,6 +9,7 @@ class ApiClient {
 
   final http.Client _client;
   String? _token;
+  void Function()? onUnauthorized;
 
   void setToken(String token) {
     _token = token;
@@ -62,6 +63,10 @@ class ApiClient {
 
   void _validateResponse(http.Response response) {
     if (response.statusCode < 400) return;
+
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+    }
 
     var message = 'Error del servidor (${response.statusCode})';
     try {

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using fix_log_api.Infraestructure.Data;
@@ -11,9 +12,11 @@ using fix_log_api.Infraestructure.Data;
 namespace fix_log_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503153512_AddUserIdToEntities")]
+    partial class AddUserIdToEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,9 +33,6 @@ namespace fix_log_api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
@@ -44,9 +44,6 @@ namespace fix_log_api.Migrations
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -64,9 +61,6 @@ namespace fix_log_api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Details")
                         .IsRequired()
                         .HasColumnType("text");
@@ -81,20 +75,12 @@ namespace fix_log_api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Expenses", t =>
-                        {
-                            t.HasCheckConstraint("CK_Expense_Price", "\"Price\" > 0");
-
-                            t.HasCheckConstraint("CK_Expense_Quantity", "\"Quantity\" > 0");
-                        });
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("fix_log_api.Domain.Entities.Report", b =>
@@ -107,9 +93,6 @@ namespace fix_log_api.Migrations
 
                     b.Property<decimal>("Cost")
                         .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
@@ -127,9 +110,6 @@ namespace fix_log_api.Migrations
                     b.Property<bool>("IsPaid")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
@@ -137,10 +117,7 @@ namespace fix_log_api.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Reports", t =>
-                        {
-                            t.HasCheckConstraint("CK_Report_Cost", "\"Cost\" >= 0");
-                        });
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("fix_log_api.Domain.Entities.User", b =>
@@ -160,9 +137,6 @@ namespace fix_log_api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });

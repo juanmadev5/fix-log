@@ -1,4 +1,4 @@
-﻿using fix_log_api.Domain.Common;
+using fix_log_api.Domain.Common;
 
 namespace fix_log_api.Application.Interfaces
 {
@@ -6,10 +6,10 @@ namespace fix_log_api.Application.Interfaces
         where TResponse : class
         where TRequest : class
     {
-        Task<ActionResponse<List<TResponse>?>> GetAll();
-        Task<ActionResponse<TResponse?>> GetById(int id);
-        Task<ActionResponse<TResponse>> Create(TRequest dto);
-        Task<ActionResponse<TResponse>> Edit(TResponse dto);
-        Task<ActionResponse<bool>> Delete(int id);
+        Task<ActionResponse<List<TResponse>?>> GetAll(int userId);
+        Task<ActionResponse<TResponse?>> GetById(int id, int userId);
+        Task<ActionResponse<TResponse>> Create(TRequest dto, int userId);
+        Task<ActionResponse<TResponse>> Edit(TResponse dto, int userId);
+        Task<ActionResponse<bool>> Delete(int id, int userId);
     }
 }

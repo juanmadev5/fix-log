@@ -1,4 +1,4 @@
-﻿using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +8,11 @@ namespace fix_log_api.Infraestructure.Data.Repositories
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<List<Report>?> GetAll()
+        public async Task<List<Report>?> GetAll(int userId)
         {
-            return await _context.Set<Report>().ToListAsync();
+            return await _context.Set<Report>()
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
         }
 
         public async Task<Report?> GetById(int id)
@@ -36,7 +38,7 @@ namespace fix_log_api.Infraestructure.Data.Repositories
         {
             int rowsAffected = await _context
                 .Set<Report>()
-                .Where(r => r.Id == entity.Id)
+                .Where(r => r.Id == entity.Id && r.UserId == entity.UserId)
                 .ExecuteUpdateAsync(setters =>
                     setters
                         .SetProperty(r => r.Details, entity.Details)
@@ -44,6 +46,7 @@ namespace fix_log_api.Infraestructure.Data.Repositories
                         .SetProperty(r => r.Date, entity.Date)
                         .SetProperty(r => r.IsCompleted, entity.IsCompleted)
                         .SetProperty(r => r.IsPaid, entity.IsPaid)
+                        .SetProperty(r => r.Cost, entity.Cost)
                 );
 
             return rowsAffected > 0;

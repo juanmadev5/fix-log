@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using fix_log_api.Infraestructure.Data;
@@ -11,9 +12,11 @@ using fix_log_api.Infraestructure.Data;
 namespace fix_log_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503154437_AddTimestampsToEntities")]
+    partial class AddTimestampsToEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,12 +92,7 @@ namespace fix_log_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Expenses", t =>
-                        {
-                            t.HasCheckConstraint("CK_Expense_Price", "\"Price\" > 0");
-
-                            t.HasCheckConstraint("CK_Expense_Quantity", "\"Quantity\" > 0");
-                        });
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("fix_log_api.Domain.Entities.Report", b =>
@@ -137,10 +135,7 @@ namespace fix_log_api.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Reports", t =>
-                        {
-                            t.HasCheckConstraint("CK_Report_Cost", "\"Cost\" >= 0");
-                        });
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("fix_log_api.Domain.Entities.User", b =>
@@ -160,9 +155,6 @@ namespace fix_log_api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });

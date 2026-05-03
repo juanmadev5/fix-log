@@ -1,4 +1,4 @@
-﻿using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,21 +41,23 @@ namespace fix_log_api.Infraestructure.Data.Repositories
         {
             int rowsAffected = await _context
                 .Set<Expense>()
-                .Where(r => r.Id == entity.Id)
+                .Where(r => r.Id == entity.Id && r.UserId == entity.UserId)
                 .ExecuteUpdateAsync(setters =>
                     setters
-                        .SetProperty(r => r.Title, r => entity.Title)
+                        .SetProperty(r => r.Title, entity.Title)
                         .SetProperty(r => r.Details, entity.Details)
-                        .SetProperty(r => r.Price, r => entity.Price)
-                        .SetProperty(r => r.Quantity, r => entity.Quantity)
+                        .SetProperty(r => r.Price, entity.Price)
+                        .SetProperty(r => r.Quantity, entity.Quantity)
                 );
 
             return rowsAffected > 0;
         }
 
-        public async Task<List<Expense>?> GetAll()
+        public async Task<List<Expense>?> GetAll(int userId)
         {
-            return await _context.Set<Expense>().ToListAsync();
+            return await _context.Set<Expense>()
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
         }
 
         public async Task<Expense?> GetById(int id)

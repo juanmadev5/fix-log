@@ -1,4 +1,4 @@
-﻿using fix_log_api.Application.DTOs;
+using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
 using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
@@ -10,10 +10,11 @@ namespace fix_log_api.Application.Services
     {
         private readonly IExpenseRepository _repository = repository;
 
-        public async Task<ActionResponse<ResponseExpenseDto>> Create(CreateExpenseDto dto)
+        public async Task<ActionResponse<ResponseExpenseDto>> Create(CreateExpenseDto dto, int userId)
         {
             var expenseEntity = new Expense
             {
+                UserId = userId,
                 Title = dto.Title,
                 Details = dto.Details,
                 Price = dto.Price,
@@ -46,8 +47,19 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<bool>> Delete(int id)
+        public async Task<ActionResponse<bool>> Delete(int id, int userId)
         {
+            var expense = await _repository.GetById(id);
+
+            if (expense == null || expense.UserId != userId)
+            {
+                return new ActionResponse<bool>(
+                    false,
+                    $"No se pudo eliminar el gasto. El ID {id} no fue encontrado.",
+                    Status.NOT_FOUND
+                );
+            }
+
             bool success = await _repository.Delete(id);
 
             if (!success)
@@ -62,11 +74,23 @@ namespace fix_log_api.Application.Services
             return new ActionResponse<bool>(true, "Gasto eliminado correctamente", Status.SUCCESS);
         }
 
-        public async Task<ActionResponse<ResponseExpenseDto>> Edit(ResponseExpenseDto dto)
+        public async Task<ActionResponse<ResponseExpenseDto>> Edit(ResponseExpenseDto dto, int userId)
         {
+            var existing = await _repository.GetById(dto.Id);
+
+            if (existing == null || existing.UserId != userId)
+            {
+                return new ActionResponse<ResponseExpenseDto>(
+                    dto,
+                    "No se pudo actualizar el gasto. Es posible que el ID no exista.",
+                    Status.NOT_FOUND
+                );
+            }
+
             var expenseEntity = new Expense
             {
                 Id = dto.Id,
+                UserId = userId,
                 Title = dto.Title,
                 Details = dto.Details,
                 Price = dto.Price,
@@ -91,9 +115,9 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<List<ResponseExpenseDto>?>> GetAll()
+        public async Task<ActionResponse<List<ResponseExpenseDto>?>> GetAll(int userId)
         {
-            var expenses = await _repository.GetAll();
+            var expenses = await _repository.GetAll(userId);
 
             if (expenses == null || expenses.Count == 0)
             {
@@ -115,11 +139,11 @@ namespace fix_log_api.Application.Services
             );
         }
 
-        public async Task<ActionResponse<ResponseExpenseDto?>> GetById(int id)
+        public async Task<ActionResponse<ResponseExpenseDto?>> GetById(int id, int userId)
         {
             var expense = await _repository.GetById(id);
 
-            if (expense == null)
+            if (expense == null || expense.UserId != userId)
             {
                 return new ActionResponse<ResponseExpenseDto?>(
                     null,

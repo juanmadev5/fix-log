@@ -11,6 +11,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({required ApiClient apiClient}) {
     _apiClient = apiClient;
     _repository = AuthRepositoryImpl(AuthRemoteDataSource(_apiClient));
+    _apiClient.onUnauthorized = logout;
   }
 
   late final ApiClient _apiClient;

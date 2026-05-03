@@ -3,6 +3,7 @@ using fix_log_api.Application.Interfaces;
 using fix_log_api.Domain.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace fix_log_api.Controllers
 {
@@ -13,38 +14,41 @@ namespace fix_log_api.Controllers
     {
         private readonly ICustomerService _service = service;
 
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(GetUserId());
             return result.Status == Status.SUCCESS ? Ok(result) : NotFound(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _service.GetById(id);
+            var result = await _service.GetById(id, GetUserId());
             return result.Status == Status.FOUND ? Ok(result) : NotFound(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateCustomerDto dto)
         {
-            var result = await _service.Create(dto);
+            var result = await _service.Create(dto, GetUserId());
             return result.Status == Status.SUCCESS ? CreatedAtAction(nameof(GetById), new { id = result.Response!.Id }, result) : BadRequest(result);
         }
 
         [HttpPut]
         public async Task<IActionResult> Edit(ResponseCustomerDto dto)
         {
-            var result = await _service.Edit(dto);
+            var result = await _service.Edit(dto, GetUserId());
             return result.Status == Status.SUCCESS ? Ok(result) : NotFound(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _service.Delete(id);
+            var result = await _service.Delete(id, GetUserId());
             return result.Status == Status.SUCCESS ? Ok(result) : NotFound(result);
         }
     }

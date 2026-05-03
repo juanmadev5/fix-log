@@ -3,7 +3,7 @@
     public interface ICommonActions<T>
         where T : class
     {
-        Task<List<T>?> GetAll();
+        Task<List<T>?> GetAll(int userId);
 
         Task<T?> GetById(int id);
 
