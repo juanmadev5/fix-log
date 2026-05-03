@@ -13,7 +13,7 @@ API REST construida con ASP.NET Core 10 y PostgreSQL.
 ### 1. Base de datos (Docker)
 
 ```bash
-docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d postgres:16
+docker run --name postgres -e POSTGRES_PASSWORD=admin -p 5432:5432 -d postgres:16
 ```
 
 ### 2. Connection string
@@ -23,7 +23,7 @@ Editá `appsettings.Development.json` con tus credenciales:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5433;Database=postgres;Username=postgres;Password=postgres"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=admin"
   }
 }
 ```
@@ -59,19 +59,31 @@ dotnet tool install --global dotnet-ef
 ### Crear una nueva migración
 
 ```bash
+# bash / zsh
 ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <NombreMigracion>
+
+# PowerShell
+$env:ASPNETCORE_ENVIRONMENT="Development"; dotnet ef migrations add <NombreMigracion>
 ```
 
 ### Aplicar migraciones a la base de datos
 
 ```bash
+# bash / zsh
 ASPNETCORE_ENVIRONMENT=Development dotnet ef database update
+
+# PowerShell
+$env:ASPNETCORE_ENVIRONMENT="Development"; dotnet ef database update
 ```
 
-### Revertir la última migración
+### Eliminar la última migración (solo si no fue aplicada a la DB)
 
 ```bash
+# bash / zsh
 ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations remove
+
+# PowerShell
+$env:ASPNETCORE_ENVIRONMENT="Development"; dotnet ef migrations remove
 ```
 
 ## Levantar el proyecto

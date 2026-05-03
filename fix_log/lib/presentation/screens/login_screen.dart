@@ -39,8 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (authProvider.isAuthenticated) {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -61,8 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 56),
-                    // Brand header
+                    const SizedBox(height: 32),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
@@ -71,14 +71,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 64,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    Text('Bienvenido', style: textTheme.displayLarge),
+                    const SizedBox(height: 20),
+                    Text('Bienvenido', style: textTheme.headlineMedium),
                     const SizedBox(height: 6),
                     Text(
                       'Inicia sesión para continuar',
                       style: textTheme.bodyMedium,
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
                     // Form
                     AppTextField(
                       controller: _emailController,

@@ -122,9 +122,9 @@ namespace fix_log_api.Application.Services
             if (expenses == null || expenses.Count == 0)
             {
                 return new ActionResponse<List<ResponseExpenseDto>?>(
-                    null,
+                    [],
                     "No hay gastos registrados",
-                    Status.NOT_FOUND
+                    Status.SUCCESS
                 );
             }
 

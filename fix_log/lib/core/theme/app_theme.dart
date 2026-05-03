@@ -10,14 +10,23 @@ abstract final class AppTheme {
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     final base = ThemeData(brightness: brightness);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: _seed,
+      brightness: brightness,
+    );
+
+    const radius = BorderRadius.all(Radius.circular(10));
+
+    OutlineInputBorder border(Color color, {double width = 1}) =>
+        OutlineInputBorder(
+          borderRadius: radius,
+          borderSide: BorderSide(color: color, width: width),
+        );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _seed,
-        brightness: brightness,
-      ),
+      colorScheme: colorScheme,
       textTheme: GoogleFonts.interTextTheme(base.textTheme),
       navigationBarTheme: NavigationBarThemeData(
         height: 64,
@@ -46,15 +55,11 @@ abstract final class AppTheme {
         filled: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        enabledBorder:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedBorder:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        errorBorder:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        focusedErrorBorder:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        border: border(colorScheme.primary),
+        enabledBorder: border(colorScheme.primary),
+        focusedBorder: border(colorScheme.primary, width: 2),
+        errorBorder: border(colorScheme.error),
+        focusedErrorBorder: border(colorScheme.error, width: 2),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),
       cardTheme: CardThemeData(

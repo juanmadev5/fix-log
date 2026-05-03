@@ -132,9 +132,9 @@ namespace fix_log_api.Application.Services
             if (reports == null || reports.Count == 0)
             {
                 return new ActionResponse<List<ResponseReportDto>?>(
-                    null,
+                    [],
                     "No hay reportes registrados",
-                    Status.NOT_FOUND
+                    Status.SUCCESS
                 );
             }
 

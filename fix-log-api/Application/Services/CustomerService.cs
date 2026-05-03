@@ -123,9 +123,9 @@ namespace fix_log_api.Application.Services
             if (customers == null || customers.Count == 0)
             {
                 return new ActionResponse<List<ResponseCustomerDto>?>(
-                    null,
+                    [],
                     "No hay clientes registrados",
-                    Status.NOT_FOUND
+                    Status.SUCCESS
                 );
             }
 

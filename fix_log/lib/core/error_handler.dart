@@ -8,7 +8,7 @@ String friendlyError(Object error) {
     if (code != null && code >= 500) return 'Error del servidor. Inténtalo más tarde.';
     return switch (code) {
       400 => error.message,
-      401 => 'Sesión expirada. Inicia sesión de nuevo.',
+      401 => error.message.isNotEmpty ? error.message : 'Sesión expirada. Inicia sesión de nuevo.',
       403 => 'No tienes permiso para esta acción.',
       _ => error.message,
     };

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'core/api_client.dart';
 import 'core/theme/app_theme.dart';
@@ -10,7 +12,17 @@ import 'presentation/providers/report_provider.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/screens/login_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux)) {
+    await windowManager.ensureInitialized();
+    await windowManager.setMinimumSize(const Size(380, 640));
+    await windowManager.setMaximumSize(const Size(520, 960));
+    await windowManager.setMaximizable(false);
+  }
+
   runApp(const FixLogApp());
 }
 

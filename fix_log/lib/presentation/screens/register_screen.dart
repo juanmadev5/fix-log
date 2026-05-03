@@ -38,8 +38,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (authProvider.isAuthenticated) {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
       );
     }
   }
@@ -105,8 +106,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onPressed: () =>
                             setState(() => _obscurePassword = !_obscurePassword),
                       ),
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Ingresa tu contraseña' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
+                        if (v.length < 6) return 'Mínimo 6 caracteres';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 24),
                     if (authProvider.errorMessage != null) ...[
