@@ -2,7 +2,7 @@ using fix_log_api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace fix_log_api.Infraestructure.Data.Configurations
+namespace fix_log_api.Infrastructure.Data.Configurations
 {
     // DbUp's SQL scripts (db/migration/) are the real source of truth for the schema.
     // This Fluent config, including check constraints, is documentation that must stay in sync with them.

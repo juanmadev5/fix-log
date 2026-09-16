@@ -1,6 +1,0 @@
-import '../models/auth_response.dart';
-
-abstract class AuthRepository {
-  Future<AuthResponse> login(String email, String password);
-  Future<AuthResponse> register(String email, String password);
-}

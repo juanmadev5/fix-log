@@ -1,6 +1,23 @@
 @fix_log_api_HostAddress = http://localhost:5167
 
-GET {{fix_log_api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register
+POST {{fix_log_api_HostAddress}}/api/v1/auth/register
+Content-Type: application/json
 
-###
+{
+  "email": "demo@example.com",
+  "password": "password123"
+}
+
+### Login
+POST {{fix_log_api_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@example.com",
+  "password": "password123"
+}
+
+### List customers (requires a token from Login above)
+GET {{fix_log_api_HostAddress}}/api/v1/customer?page=1&pageSize=20
+Authorization: Bearer {{token}}

@@ -1,8 +1,10 @@
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Services;
-using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
+using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace fix_log_api.Tests;
@@ -14,55 +16,75 @@ public class ExpenseServiceTests
 
     public ExpenseServiceTests()
     {
-        _service = new ExpenseService(_repo.Object);
+        _service = new ExpenseService(_repo.Object, NullLogger<ExpenseService>.Instance);
     }
 
     [Fact]
-    public async Task Create_WithValidData_ReturnsSuccess()
+    public async Task Given_ValidData_When_Creating_Then_ReturnsCreatedExpense()
     {
-        _repo.Setup(r => r.Create(It.IsAny<Expense>())).ReturnsAsync(true);
+        // Given
+        _repo.Setup(repository => repository.Create(It.IsAny<Expense>())).Returns(Task.CompletedTask);
 
+        // When
         var result = await _service.Create(new CreateExpenseDto("Gasolina", "Combustible", 50000f, 1), userId: 1);
 
-        Assert.Equal(Status.SUCCESS, result.Status);
-        Assert.NotNull(result.Response);
+        // Then
+        result.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task Edit_WithCorrectUser_ReturnsSuccess()
+    public async Task Given_OwnedExpense_When_Editing_Then_ReturnsUpdatedExpense()
     {
-        _repo.Setup(r => r.GetById(1)).ReturnsAsync(
-            new Expense { Id = 1, UserId = 1, Title = "Gasolina", Details = "Combustible", Price = 50000f, Quantity = 1 }
-        );
-        _repo.Setup(r => r.Edit(It.IsAny<Expense>())).ReturnsAsync(true);
+        // Given
+        _repo.Setup(repository => repository.Edit(It.IsAny<Expense>())).ReturnsAsync(true);
 
-        var dto = new ResponseExpenseDto(1, "Gasolina Premium", "Combustible full", 60000f, 1);
-        var result = await _service.Edit(dto, userId: 1);
+        var dto = new CreateExpenseDto("Gasolina Premium", "Combustible full", 60000f, 1);
 
-        Assert.Equal(Status.SUCCESS, result.Status);
+        // When
+        var result = await _service.Edit(1, dto, userId: 1);
+
+        // Then
+        result.Title.Should().Be("Gasolina Premium");
     }
 
     [Fact]
-    public async Task Edit_WithWrongUser_ReturnsNotFound_AndNeverCallsRepo()
+    public async Task Given_ExpenseOwnedByAnotherUser_When_Editing_Then_ThrowsNotFoundAppException()
     {
-        _repo.Setup(r => r.GetById(1)).ReturnsAsync(
-            new Expense { Id = 1, UserId = 1, Title = "Gasolina", Details = "Combustible", Price = 50000f, Quantity = 1 }
-        );
+        // Given
+        _repo.Setup(repository => repository.Edit(It.IsAny<Expense>())).ReturnsAsync(false);
 
-        var dto = new ResponseExpenseDto(1, "Gasolina Premium", "Combustible full", 60000f, 1);
-        var result = await _service.Edit(dto, userId: 99);
+        var dto = new CreateExpenseDto("Gasolina Premium", "Combustible full", 60000f, 1);
 
-        Assert.Equal(Status.NOT_FOUND, result.Status);
-        _repo.Verify(r => r.Edit(It.IsAny<Expense>()), Times.Never);
+        // When
+        var act = () => _service.Edit(1, dto, userId: 99);
+
+        // Then
+        await act.Should().ThrowAsync<NotFoundAppException>();
     }
 
     [Fact]
-    public async Task GetAll_WhenEmpty_ReturnsNotFound()
+    public async Task Given_NoExpenses_When_GettingAll_Then_ReturnsEmptyList()
     {
-        _repo.Setup(r => r.GetAll(1)).ReturnsAsync([]);
+        // Given
+        _repo.Setup(repository => repository.GetAll(1, It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(([], 0));
 
-        var result = await _service.GetAll(1);
+        // When
+        var result = await _service.GetAll(1, 1, 20);
 
-        Assert.Equal(Status.NOT_FOUND, result.Status);
+        // Then
+        result.Items.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Given_ExpenseOwnedByAnotherUser_When_Deleting_Then_ThrowsNotFoundAppException()
+    {
+        // Given
+        _repo.Setup(repository => repository.Delete(1, 99)).ReturnsAsync(false);
+
+        // When
+        var act = () => _service.Delete(1, userId: 99);
+
+        // Then
+        await act.Should().ThrowAsync<NotFoundAppException>();
     }
 }

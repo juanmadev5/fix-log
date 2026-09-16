@@ -1,9 +1,12 @@
 using fix_log_api.Application.DTOs;
+using fix_log_api.Application.Options;
 using fix_log_api.Application.Services;
-using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using Microsoft.Extensions.Configuration;
+using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace fix_log_api.Tests;
@@ -15,79 +18,88 @@ public class AuthServiceTests
 
     public AuthServiceTests()
     {
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["JwtSettings:Secret"] = "clave_de_prueba_que_tiene_al_menos_32_caracteres",
-                ["JwtSettings:Issuer"] = "test-issuer",
-                ["JwtSettings:Audience"] = "test-audience",
-                ["JwtSettings:ExpiryMinutes"] = "60",
-                ["BcryptSettings:WorkFactor"] = "4"
-            })
-            .Build();
+        var jwtSettings = Options.Create(new JwtSettings
+        {
+            Secret = "test_secret_key_with_at_least_32_characters",
+            Issuer = "test-issuer",
+            Audience = "test-audience",
+            ExpiryMinutes = 60
+        });
+        var bcryptSettings = Options.Create(new BcryptSettings { WorkFactor = 4 });
 
-        _service = new AuthService(_repo.Object, config);
+        _service = new AuthService(_repo.Object, jwtSettings, bcryptSettings, NullLogger<AuthService>.Instance);
     }
 
     [Fact]
-    public async Task Register_WithNewEmail_ReturnsSuccess()
+    public async Task Given_NewEmail_When_Registering_Then_ReturnsToken()
     {
-        _repo.Setup(r => r.GetByEmail("nuevo@test.com")).ReturnsAsync((User?)null);
-        _repo.Setup(r => r.Create(It.IsAny<User>())).ReturnsAsync(true);
+        // Given
+        _repo.Setup(repository => repository.GetByEmail("new@test.com")).ReturnsAsync((User?)null);
+        _repo.Setup(repository => repository.Create(It.IsAny<User>())).Returns(Task.CompletedTask);
 
-        var result = await _service.Register(new RegisterDto("nuevo@test.com", "password123"));
+        // When
+        var result = await _service.Register(new RegisterDto("new@test.com", "password123"));
 
-        Assert.Equal(Status.SUCCESS, result.Status);
-        Assert.NotNull(result.Response?.Token);
+        // Then
+        result.Token.Should().NotBeNullOrEmpty();
+        result.Email.Should().Be("new@test.com");
     }
 
     [Fact]
-    public async Task Register_WithExistingEmail_ReturnsFailed()
+    public async Task Given_ExistingEmail_When_Registering_Then_ThrowsConflictAppException()
     {
-        _repo.Setup(r => r.GetByEmail("existente@test.com")).ReturnsAsync(
-            new User { Id = 1, Email = "existente@test.com", PasswordHash = "hash" }
-        );
+        // Given
+        _repo.Setup(repository => repository.GetByEmail("existing@test.com")).ReturnsAsync(
+            new User { Id = 1, Email = "existing@test.com", PasswordHash = "hash" });
 
-        var result = await _service.Register(new RegisterDto("existente@test.com", "password123"));
+        // When
+        var act = () => _service.Register(new RegisterDto("existing@test.com", "password123"));
 
-        Assert.Equal(Status.FAILED, result.Status);
-        _repo.Verify(r => r.Create(It.IsAny<User>()), Times.Never);
+        // Then
+        await act.Should().ThrowAsync<ConflictAppException>();
+        _repo.Verify(repository => repository.Create(It.IsAny<User>()), Times.Never);
     }
 
     [Fact]
-    public async Task Login_WithNonExistentEmail_ReturnsFailed()
+    public async Task Given_NonExistentEmail_When_LoggingIn_Then_ThrowsInvalidCredentialsException()
     {
-        _repo.Setup(r => r.GetByEmail("noexiste@test.com")).ReturnsAsync((User?)null);
+        // Given
+        _repo.Setup(repository => repository.GetByEmail("missing@test.com")).ReturnsAsync((User?)null);
 
-        var result = await _service.Login(new LoginDto("noexiste@test.com", "password"));
+        // When
+        var act = () => _service.Login(new LoginDto("missing@test.com", "password"));
 
-        Assert.Equal(Status.FAILED, result.Status);
+        // Then
+        await act.Should().ThrowAsync<InvalidCredentialsException>();
     }
 
     [Fact]
-    public async Task Login_WithCorrectCredentials_ReturnsSuccess()
+    public async Task Given_CorrectCredentials_When_LoggingIn_Then_ReturnsToken()
     {
+        // Given
         var hash = BCrypt.Net.BCrypt.HashPassword("password123", workFactor: 4);
-        _repo.Setup(r => r.GetByEmail("usuario@test.com")).ReturnsAsync(
-            new User { Id = 1, Email = "usuario@test.com", PasswordHash = hash }
-        );
+        _repo.Setup(repository => repository.GetByEmail("user@test.com")).ReturnsAsync(
+            new User { Id = 1, Email = "user@test.com", PasswordHash = hash });
 
-        var result = await _service.Login(new LoginDto("usuario@test.com", "password123"));
+        // When
+        var result = await _service.Login(new LoginDto("user@test.com", "password123"));
 
-        Assert.Equal(Status.SUCCESS, result.Status);
-        Assert.NotNull(result.Response?.Token);
+        // Then
+        result.Token.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
-    public async Task Login_WithWrongPassword_ReturnsFailed()
+    public async Task Given_WrongPassword_When_LoggingIn_Then_ThrowsInvalidCredentialsException()
     {
+        // Given
         var hash = BCrypt.Net.BCrypt.HashPassword("password123", workFactor: 4);
-        _repo.Setup(r => r.GetByEmail("usuario@test.com")).ReturnsAsync(
-            new User { Id = 1, Email = "usuario@test.com", PasswordHash = hash }
-        );
+        _repo.Setup(repository => repository.GetByEmail("user@test.com")).ReturnsAsync(
+            new User { Id = 1, Email = "user@test.com", PasswordHash = hash });
 
-        var result = await _service.Login(new LoginDto("usuario@test.com", "contraseña_incorrecta"));
+        // When
+        var act = () => _service.Login(new LoginDto("user@test.com", "wrong_password"));
 
-        Assert.Equal(Status.FAILED, result.Status);
+        // Then
+        await act.Should().ThrowAsync<InvalidCredentialsException>();
     }
 }

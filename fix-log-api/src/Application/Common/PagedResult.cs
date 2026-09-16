@@ -1,4 +1,7 @@
-namespace fix_log_api.Domain.Common
+namespace fix_log_api.Application.Common
 {
-    public record PagedResult<T>(List<T> Items, int Page, int PageSize, int TotalCount);
+    public record PagedResult<T>(List<T> Items, int Page, int PageSize, int TotalCount)
+    {
+        public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+    }
 }

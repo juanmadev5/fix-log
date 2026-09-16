@@ -31,7 +31,6 @@ class Report {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'customerId': customerId,
       'date': date.toIso8601String(),
       'details': details,

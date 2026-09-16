@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class ShimmerList extends StatefulWidget {
   const ShimmerList({super.key, this.itemCount = 6});
 
@@ -36,11 +38,11 @@ class _ShimmerListState extends State<ShimmerList>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark
-        ? const Color(0xFF1E293B)
-        : const Color(0xFFE2E8F0);
+        ? AppColors.shimmerBaseDark
+        : AppColors.shimmerBaseLight;
     final highlightColor = isDark
-        ? const Color(0xFF334155)
-        : const Color(0xFFF1F5F9);
+        ? AppColors.shimmerHighlightDark
+        : AppColors.shimmerHighlightLight;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -64,7 +66,11 @@ class _ShimmerListState extends State<ShimmerList>
               children: [
                 Container(height: 14, width: 160, color: Colors.transparent),
                 const SizedBox(height: 8),
-                Container(height: 12, width: double.infinity, color: Colors.transparent),
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  color: Colors.transparent,
+                ),
                 const SizedBox(height: 4),
                 Container(height: 12, width: 120, color: Colors.transparent),
               ],

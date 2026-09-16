@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace fix_log_api.Controllers
+namespace fix_log_api.Api.Controllers
 {
     [Authorize]
     public abstract class ApiControllerBase : ControllerBase

@@ -1,6 +1,6 @@
 import '../../domain/models/expense.dart';
-import '../../domain/repositories/expense_repository.dart';
-import '../datasources/expense_remote_data_source.dart';
+import '../services/expense_remote_data_source.dart';
+import 'expense_repository.dart';
 
 class ExpenseRepositoryImpl implements ExpenseRepository {
   ExpenseRepositoryImpl(this._dataSource);

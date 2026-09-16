@@ -1,6 +1,6 @@
 import '../../domain/models/report.dart';
-import '../../domain/repositories/report_repository.dart';
-import '../datasources/report_remote_data_source.dart';
+import '../services/report_remote_data_source.dart';
+import 'report_repository.dart';
 
 class ReportRepositoryImpl implements ReportRepository {
   ReportRepositoryImpl(this._dataSource);

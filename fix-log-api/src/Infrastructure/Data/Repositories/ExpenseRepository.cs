@@ -2,67 +2,62 @@ using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace fix_log_api.Infraestructure.Data.Repositories
+namespace fix_log_api.Infrastructure.Data.Repositories
 {
     public class ExpenseRepository(AppDbContext context) : IExpenseRepository
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<bool> Create(Expense entity)
+        public async Task Create(Expense entity)
         {
-            try
-            {
-                await _context.AddAsync(entity);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
+            await _context.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id, int userId)
         {
-            Expense? expense = await _context.Set<Expense>().FindAsync(id);
+            int rowsAffected = await _context.Set<Expense>()
+                .Where(expense => expense.Id == id && expense.UserId == userId)
+                .ExecuteDeleteAsync();
 
-            if (expense == null)
-            {
-                return false;
-            }
-
-            _context.Set<Expense>().Remove(expense);
-            await _context.SaveChangesAsync();
-
-            return true;
+            return rowsAffected > 0;
         }
 
         public async Task<bool> Edit(Expense entity)
         {
             int rowsAffected = await _context
                 .Set<Expense>()
-                .Where(r => r.Id == entity.Id && r.UserId == entity.UserId)
+                .Where(expense => expense.Id == entity.Id && expense.UserId == entity.UserId)
                 .ExecuteUpdateAsync(setters =>
                     setters
-                        .SetProperty(r => r.Title, entity.Title)
-                        .SetProperty(r => r.Details, entity.Details)
-                        .SetProperty(r => r.Price, entity.Price)
-                        .SetProperty(r => r.Quantity, entity.Quantity)
+                        .SetProperty(expense => expense.Title, entity.Title)
+                        .SetProperty(expense => expense.Details, entity.Details)
+                        .SetProperty(expense => expense.Price, entity.Price)
+                        .SetProperty(expense => expense.Quantity, entity.Quantity)
                 );
 
             return rowsAffected > 0;
         }
 
-        public async Task<List<Expense>?> GetAll(int userId)
+        public async Task<(List<Expense> Items, int TotalCount)> GetAll(int userId, int page, int pageSize)
         {
-            return await _context.Set<Expense>()
-                .Where(e => e.UserId == userId)
+            var query = _context.Set<Expense>().Where(expense => expense.UserId == userId);
+
+            int totalCount = await query.CountAsync();
+
+            List<Expense> items = await query
+                .OrderBy(expense => expense.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
-        public async Task<Expense?> GetById(int id)
+        public async Task<Expense?> GetById(int id, int userId)
         {
-            return await _context.Set<Expense>().FindAsync(id);
+            return await _context.Set<Expense>()
+                .FirstOrDefaultAsync(expense => expense.Id == id && expense.UserId == userId);
         }
     }
 }

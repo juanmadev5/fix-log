@@ -2,7 +2,7 @@ using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace fix_log_api.Infraestructure.Data.Repositories
+namespace fix_log_api.Infrastructure.Data.Repositories
 {
     public class UserRepository(AppDbContext context) : IUserRepository
     {
@@ -10,21 +10,13 @@ namespace fix_log_api.Infraestructure.Data.Repositories
 
         public async Task<User?> GetByEmail(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(user => user.Email == email);
         }
 
-        public async Task<bool> Create(User user)
+        public async Task Create(User user)
         {
-            try
-            {
-                await _context.Users.AddAsync(user);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
         }
     }
 }

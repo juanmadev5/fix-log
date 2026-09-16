@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fixlog-postgres
+    environment:
+      POSTGRES_DB: fixlog
+      POSTGRES_USER: ${POSTGRES_USER:-fixlog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fixlog}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - fixlog-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fixlog} -d fixlog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./fix-log-api
+      dockerfile: Dockerfile
+    container_name: fixlog-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-5167}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=fixlog;Username=${POSTGRES_USER:-fixlog};Password=${POSTGRES_PASSWORD:-fixlog}
+      RunMigrations: "true"
+      JwtSettings__Secret: ${JWT_SECRET:-local_dev_secret_key_at_least_32_characters_long}
+      JwtSettings__Issuer: fix-log-api
+      JwtSettings__Audience: fix-log-api-clients
+      JwtSettings__ExpiryMinutes: "60"
+      BcryptSettings__WorkFactor: "12"
+      CorsSettings__AllowedOrigins__0: http://localhost:3000
+
+volumes:
+  fixlog-postgres-data:

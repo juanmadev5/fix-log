@@ -1,55 +1,61 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'core/api_client.dart';
-import 'core/theme/app_theme.dart';
-import 'presentation/providers/auth_provider.dart';
-import 'presentation/providers/customer_provider.dart';
-import 'presentation/providers/expense_provider.dart';
-import 'presentation/providers/report_provider.dart';
-import 'presentation/providers/theme_provider.dart';
-import 'presentation/screens/login_screen.dart';
+import 'core/di/service_locator.dart';
+import 'core/error_boundary.dart';
+import 'core/router/app_router.dart';
+import 'ui/auth/view_models/auth_cubit.dart';
+import 'ui/core/theme/app_theme.dart';
+import 'ui/core/theme/theme_cubit.dart';
+import 'ui/customer/view_models/customer_cubit.dart';
+import 'ui/expense/view_models/expense_cubit.dart';
+import 'ui/report/view_models/report_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.windows ||
-      defaultTargetPlatform == TargetPlatform.linux)) {
+  setupErrorBoundary();
+
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.linux)) {
     await windowManager.ensureInitialized();
     await windowManager.setMinimumSize(const Size(380, 640));
-    await windowManager.setMaximumSize(const Size(520, 960));
-    await windowManager.setMaximizable(false);
+    await windowManager.setMaximumSize(const Size(1280, 900));
+    await windowManager.setMaximizable(true);
   }
 
-  runApp(const FixLogApp());
+  await setupServiceLocator();
+
+  runApp(FixLogApp(router: buildAppRouter()));
 }
 
 class FixLogApp extends StatelessWidget {
-  const FixLogApp({super.key});
+  const FixLogApp({super.key, required this.router});
+
+  final RouterConfig<Object> router;
 
   @override
   Widget build(BuildContext context) {
-    final apiClient = ApiClient();
-
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider(apiClient: apiClient)),
-        ChangeNotifierProvider(create: (_) => CustomerProvider(apiClient: apiClient)),
-        ChangeNotifierProvider(create: (_) => ExpenseProvider(apiClient: apiClient)),
-        ChangeNotifierProvider(create: (_) => ReportProvider(apiClient: apiClient)),
+        BlocProvider.value(value: getIt<ThemeCubit>()),
+        BlocProvider.value(value: getIt<AuthCubit>()),
+        BlocProvider.value(value: getIt<CustomerCubit>()),
+        BlocProvider.value(value: getIt<ExpenseCubit>()),
+        BlocProvider.value(value: getIt<ReportCubit>()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
-          return MaterialApp(
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'Fix Log',
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: themeProvider.themeMode,
-            home: const LoginScreen(),
+            themeMode: themeMode,
+            routerConfig: router,
           );
         },
       ),

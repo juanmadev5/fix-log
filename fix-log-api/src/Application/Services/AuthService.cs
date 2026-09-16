@@ -1,9 +1,11 @@
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Common;
+using fix_log_api.Application.Options;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,83 +13,56 @@ using System.Text;
 
 namespace fix_log_api.Application.Services
 {
-    public class AuthService(IUserRepository repository, IConfiguration configuration) : IAuthService
+    public class AuthService(
+        IUserRepository repository,
+        IOptions<JwtSettings> jwtSettings,
+        IOptions<BcryptSettings> bcryptSettings,
+        ILogger<AuthService> logger) : IAuthService
     {
         private readonly IUserRepository _repository = repository;
-        private readonly IConfiguration _configuration = configuration;
+        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+        private readonly BcryptSettings _bcryptSettings = bcryptSettings.Value;
+        private readonly ILogger<AuthService> _logger = logger;
 
-        public async Task<ActionResponse<AuthResponseDto>> Register(RegisterDto dto)
+        public async Task<AuthResponseDto> Register(RegisterDto dto)
         {
             var existing = await _repository.GetByEmail(dto.Email);
-
             if (existing != null)
-            {
-                return new ActionResponse<AuthResponseDto>(
-                    null,
-                    "Ya existe una cuenta con ese correo electrónico.",
-                    Status.FAILED
-                );
-            }
-
-            int workFactor = _configuration.GetValue<int>("BcryptSettings:WorkFactor", 12);
+                throw new ConflictAppException("EMAIL_ALREADY_REGISTERED", "An account with this email already exists.");
 
             var user = new User
             {
                 Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor)
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, _bcryptSettings.WorkFactor)
             };
 
-            bool success = await _repository.Create(user);
-
-            if (!success)
-            {
-                return new ActionResponse<AuthResponseDto>(
-                    null,
-                    "No se pudo registrar el usuario.",
-                    Status.FAILED
-                );
-            }
+            await _repository.Create(user);
+            _logger.LogInformation("User {UserId} registered", user.Id);
 
             var token = GenerateToken(user);
 
-            return new ActionResponse<AuthResponseDto>(
-                new AuthResponseDto(token, user.Email),
-                "Usuario registrado con éxito.",
-                Status.SUCCESS
-            );
+            return new AuthResponseDto(token, user.Email);
         }
 
-        public async Task<ActionResponse<AuthResponseDto>> Login(LoginDto dto)
+        public async Task<AuthResponseDto> Login(LoginDto dto)
         {
             var user = await _repository.GetByEmail(dto.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
-                return new ActionResponse<AuthResponseDto>(
-                    null,
-                    "Credenciales inválidas.",
-                    Status.FAILED
-                );
+                _logger.LogWarning("Failed login attempt for {Email}", dto.Email);
+                throw new InvalidCredentialsException();
             }
 
             var token = GenerateToken(user);
+            _logger.LogInformation("User {UserId} logged in", user.Id);
 
-            return new ActionResponse<AuthResponseDto>(
-                new AuthResponseDto(token, user.Email),
-                "Inicio de sesión exitoso.",
-                Status.SUCCESS
-            );
+            return new AuthResponseDto(token, user.Email);
         }
 
         private string GenerateToken(User user)
         {
-            var jwtSettings = _configuration.GetSection("JwtSettings");
-            var secret = jwtSettings["Secret"]!;
-            var issuer = jwtSettings["Issuer"]!;
-            var audience = jwtSettings["Audience"]!;
-            var expiryMinutes = jwtSettings.GetValue<int>("ExpiryMinutes", 60);
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -98,10 +73,10 @@ namespace fix_log_api.Application.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
                 signingCredentials: credentials
             );
 

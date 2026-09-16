@@ -1,18 +1,24 @@
+using fix_log_api.Application.Common;
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace fix_log_api.Application.Services
 {
-    public class ReportService(IReportRepository repository) : IReportService
+    public class ReportService(IReportRepository repository, ICustomerRepository customerRepository, ILogger<ReportService> logger) : IReportService
     {
         private readonly IReportRepository _repository = repository;
+        private readonly ICustomerRepository _customerRepository = customerRepository;
+        private readonly ILogger<ReportService> _logger = logger;
 
-        public async Task<ActionResponse<ResponseReportDto>> Create(CreateReportDto dto, int userId)
+        public async Task<ResponseReportDto> Create(CreateReportDto dto, int userId)
         {
-            var reportEntity = new Report
+            await EnsureCustomerOwnedByUser(dto.CustomerId, userId);
+
+            var report = new Report
             {
                 UserId = userId,
                 CustomerId = dto.CustomerId,
@@ -23,81 +29,28 @@ namespace fix_log_api.Application.Services
                 Cost = dto.Cost,
             };
 
-            bool success = await _repository.Create(reportEntity);
+            await _repository.Create(report);
+            _logger.LogInformation("Report {ReportId} created for user {UserId}", report.Id, userId);
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseReportDto>(
-                    null,
-                    "No se pudo guardar el reporte en la base de datos",
-                    Status.FAILED
-                );
-            }
-
-            var reportDto = new ResponseReportDto(
-                reportEntity.Id,
-                reportEntity.CustomerId,
-                reportEntity.Date,
-                reportEntity.Details,
-                reportEntity.IsCompleted,
-                reportEntity.IsPaid,
-                reportEntity.Cost
-            );
-
-            return new ActionResponse<ResponseReportDto>(
-                reportDto,
-                "Reporte registrado con éxito",
-                Status.SUCCESS
-            );
+            return ToDto(report);
         }
 
-        public async Task<ActionResponse<bool>> Delete(int id, int userId)
+        public async Task Delete(int id, int userId)
         {
-            var report = await _repository.GetById(id);
+            var deleted = await _repository.Delete(id, userId);
+            if (!deleted)
+                throw new NotFoundAppException("REPORT_NOT_FOUND", $"Report {id} was not found.");
 
-            if (report == null || report.UserId != userId)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el reporte. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            bool success = await _repository.Delete(id);
-
-            if (!success)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el reporte. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<bool>(
-                true,
-                "Reporte eliminado correctamente",
-                Status.SUCCESS
-            );
+            _logger.LogInformation("Report {ReportId} deleted for user {UserId}", id, userId);
         }
 
-        public async Task<ActionResponse<ResponseReportDto>> Edit(ResponseReportDto dto, int userId)
+        public async Task<ResponseReportDto> Edit(int id, CreateReportDto dto, int userId)
         {
-            var existing = await _repository.GetById(dto.Id);
+            await EnsureCustomerOwnedByUser(dto.CustomerId, userId);
 
-            if (existing == null || existing.UserId != userId)
+            var report = new Report
             {
-                return new ActionResponse<ResponseReportDto>(
-                    dto,
-                    "No se pudo actualizar el reporte. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var reportEntity = new Report
-            {
-                Id = dto.Id,
+                Id = id,
                 UserId = userId,
                 CustomerId = dto.CustomerId,
                 Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
@@ -107,84 +60,39 @@ namespace fix_log_api.Application.Services
                 Cost = dto.Cost,
             };
 
-            bool success = await _repository.Edit(reportEntity);
+            var updated = await _repository.Edit(report);
+            if (!updated)
+                throw new NotFoundAppException("REPORT_NOT_FOUND", $"Report {id} was not found.");
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseReportDto>(
-                    dto,
-                    "No se pudo actualizar el reporte. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<ResponseReportDto>(
-                dto,
-                "Reporte actualizado correctamente",
-                Status.SUCCESS
-            );
+            return ToDto(report);
         }
 
-        public async Task<ActionResponse<List<ResponseReportDto>?>> GetAll(int userId)
+        public async Task<PagedResult<ResponseReportDto>> GetAll(int userId, int page, int pageSize)
         {
-            var reports = await _repository.GetAll(userId);
+            (page, pageSize) = PaginationDefaults.Normalize(page, pageSize);
 
-            if (reports == null || reports.Count == 0)
-            {
-                return new ActionResponse<List<ResponseReportDto>?>(
-                    [],
-                    "No hay reportes registrados",
-                    Status.SUCCESS
-                );
-            }
+            var (reports, totalCount) = await _repository.GetAll(userId, page, pageSize);
+            var items = reports.Select(ToDto).ToList();
 
-            var responseDto = reports
-                .Select(e => new ResponseReportDto(
-                    e.Id,
-                    e.CustomerId,
-                    e.Date,
-                    e.Details,
-                    e.IsCompleted,
-                    e.IsPaid,
-                    e.Cost
-                ))
-                .ToList();
-
-            return new ActionResponse<List<ResponseReportDto>?>(
-                responseDto,
-                "Listado de reportes obtenido con éxito",
-                Status.SUCCESS
-            );
+            return new PagedResult<ResponseReportDto>(items, page, pageSize, totalCount);
         }
 
-        public async Task<ActionResponse<ResponseReportDto?>> GetById(int id, int userId)
+        public async Task<ResponseReportDto> GetById(int id, int userId)
         {
-            var report = await _repository.GetById(id);
+            var report = await _repository.GetById(id, userId)
+                ?? throw new NotFoundAppException("REPORT_NOT_FOUND", $"Report {id} was not found.");
 
-            if (report == null || report.UserId != userId)
-            {
-                return new ActionResponse<ResponseReportDto?>(
-                    null,
-                    $"El reporte con ID {id} no existe.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var responseDto = new ResponseReportDto(
-                report.Id,
-                report.CustomerId,
-                report.Date,
-                report.Details,
-                report.IsCompleted,
-                report.IsPaid,
-                report.Cost
-            );
-
-            return new ActionResponse<ResponseReportDto?>(
-                responseDto,
-                "Reporte encontrado con éxito",
-                Status.FOUND
-            );
+            return ToDto(report);
         }
+
+        private async Task EnsureCustomerOwnedByUser(int customerId, int userId)
+        {
+            var customer = await _customerRepository.GetById(customerId, userId);
+            if (customer == null)
+                throw new NotFoundAppException("CUSTOMER_NOT_FOUND", $"Customer {customerId} was not found.");
+        }
+
+        private static ResponseReportDto ToDto(Report report) => new(
+            report.Id, report.CustomerId, report.Date, report.Details, report.IsCompleted, report.IsPaid, report.Cost);
     }
 }

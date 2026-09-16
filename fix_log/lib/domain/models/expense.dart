@@ -13,6 +13,8 @@ class Expense {
     required this.quantity,
   });
 
+  double get total => price * quantity;
+
   factory Expense.fromJson(Map<String, dynamic> json) {
     return Expense(
       id: json['id'] as int,
@@ -25,7 +27,6 @@ class Expense {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'details': details,
       'price': price,

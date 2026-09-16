@@ -32,12 +32,6 @@ class Customer {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phoneNumber': phoneNumber,
-      'reports': reports.map((r) => r.toJson()).toList(),
-    };
+    return {'name': name, 'email': email, 'phoneNumber': phoneNumber};
   }
 }

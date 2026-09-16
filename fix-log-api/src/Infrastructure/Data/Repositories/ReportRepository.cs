@@ -2,69 +2,64 @@ using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace fix_log_api.Infraestructure.Data.Repositories
+namespace fix_log_api.Infrastructure.Data.Repositories
 {
     public class ReportRepository(AppDbContext context) : IReportRepository
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<List<Report>?> GetAll(int userId)
+        public async Task<(List<Report> Items, int TotalCount)> GetAll(int userId, int page, int pageSize)
+        {
+            var query = _context.Set<Report>().Where(report => report.UserId == userId);
+
+            int totalCount = await query.CountAsync();
+
+            List<Report> items = await query
+                .OrderBy(report => report.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        public async Task<Report?> GetById(int id, int userId)
         {
             return await _context.Set<Report>()
-                .Where(r => r.UserId == userId)
-                .ToListAsync();
+                .FirstOrDefaultAsync(report => report.Id == id && report.UserId == userId);
         }
 
-        public async Task<Report?> GetById(int id)
+        public async Task Create(Report entity)
         {
-            return await _context.Set<Report>().FindAsync(id);
-        }
-
-        public async Task<bool> Create(Report entity)
-        {
-            try
-            {
-                await _context.AddAsync(entity);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-            return true;
+            await _context.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> Edit(Report entity)
         {
             int rowsAffected = await _context
                 .Set<Report>()
-                .Where(r => r.Id == entity.Id && r.UserId == entity.UserId)
+                .Where(report => report.Id == entity.Id && report.UserId == entity.UserId)
                 .ExecuteUpdateAsync(setters =>
                     setters
-                        .SetProperty(r => r.Details, entity.Details)
-                        .SetProperty(r => r.CustomerId, entity.CustomerId)
-                        .SetProperty(r => r.Date, entity.Date)
-                        .SetProperty(r => r.IsCompleted, entity.IsCompleted)
-                        .SetProperty(r => r.IsPaid, entity.IsPaid)
-                        .SetProperty(r => r.Cost, entity.Cost)
+                        .SetProperty(report => report.Details, entity.Details)
+                        .SetProperty(report => report.CustomerId, entity.CustomerId)
+                        .SetProperty(report => report.Date, entity.Date)
+                        .SetProperty(report => report.IsCompleted, entity.IsCompleted)
+                        .SetProperty(report => report.IsPaid, entity.IsPaid)
+                        .SetProperty(report => report.Cost, entity.Cost)
                 );
 
             return rowsAffected > 0;
         }
 
-        public async Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id, int userId)
         {
-            Report? report = await _context.Set<Report>().FindAsync(id);
+            int rowsAffected = await _context.Set<Report>()
+                .Where(report => report.Id == id && report.UserId == userId)
+                .ExecuteDeleteAsync();
 
-            if (report == null)
-            {
-                return false;
-            }
-
-            _context.Set<Report>().Remove(report);
-            await _context.SaveChangesAsync();
-
-            return true;
+            return rowsAffected > 0;
         }
     }
 }

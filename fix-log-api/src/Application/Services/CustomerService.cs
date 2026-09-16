@@ -1,18 +1,21 @@
+using fix_log_api.Application.Common;
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace fix_log_api.Application.Services
 {
-    public class CustomerService(ICustomerRepository repository) : ICustomerService
+    public class CustomerService(ICustomerRepository repository, ILogger<CustomerService> logger) : ICustomerService
     {
         private readonly ICustomerRepository _repository = repository;
+        private readonly ILogger<CustomerService> _logger = logger;
 
-        public async Task<ActionResponse<ResponseCustomerDto>> Create(CreateCustomerDto dto, int userId)
+        public async Task<ResponseCustomerDto> Create(CreateCustomerDto dto, int userId)
         {
-            var customerEntity = new Customer
+            var customer = new Customer
             {
                 Id = 0,
                 UserId = userId,
@@ -22,75 +25,26 @@ namespace fix_log_api.Application.Services
                 Reports = []
             };
 
-            bool success = await _repository.Create(customerEntity);
+            await _repository.Create(customer);
+            _logger.LogInformation("Customer {CustomerId} created for user {UserId}", customer.Id, userId);
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseCustomerDto>(
-                    null,
-                    "No se pudo guardar el cliente en la base de datos",
-                    Status.FAILED
-                );
-            }
-
-            var responseDto = new ResponseCustomerDto(
-                customerEntity.Id,
-                customerEntity.Name,
-                customerEntity.Email,
-                customerEntity.PhoneNumber,
-                []
-            );
-
-            return new ActionResponse<ResponseCustomerDto>(
-                responseDto,
-                "Cliente registrado con éxito",
-                Status.SUCCESS
-            );
+            return ToDto(customer);
         }
 
-        public async Task<ActionResponse<bool>> Delete(int id, int userId)
+        public async Task Delete(int id, int userId)
         {
-            var customer = await _repository.GetById(id);
+            var deleted = await _repository.Delete(id, userId);
+            if (!deleted)
+                throw new NotFoundAppException("CUSTOMER_NOT_FOUND", $"Customer {id} was not found.");
 
-            if (customer == null || customer.UserId != userId)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el cliente. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            bool success = await _repository.Delete(id);
-
-            if (!success)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el cliente. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<bool>(true, "Cliente eliminado correctamente", Status.SUCCESS);
+            _logger.LogInformation("Customer {CustomerId} deleted for user {UserId}", id, userId);
         }
 
-        public async Task<ActionResponse<ResponseCustomerDto>> Edit(ResponseCustomerDto dto, int userId)
+        public async Task<ResponseCustomerDto> Edit(int id, CreateCustomerDto dto, int userId)
         {
-            var existing = await _repository.GetById(dto.Id);
-
-            if (existing == null || existing.UserId != userId)
+            var customer = new Customer
             {
-                return new ActionResponse<ResponseCustomerDto>(
-                    dto,
-                    "No se pudo actualizar el cliente. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var customerEntity = new Customer
-            {
-                Id = dto.Id,
+                Id = id,
                 UserId = userId,
                 Name = dto.Name,
                 Email = dto.Email,
@@ -98,76 +52,38 @@ namespace fix_log_api.Application.Services
                 Reports = []
             };
 
-            bool success = await _repository.Edit(customerEntity);
+            var updated = await _repository.Edit(customer);
+            if (!updated)
+                throw new NotFoundAppException("CUSTOMER_NOT_FOUND", $"Customer {id} was not found.");
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseCustomerDto>(
-                    dto,
-                    "No se pudo actualizar el cliente. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<ResponseCustomerDto>(
-                dto,
-                "Cliente actualizado correctamente",
-                Status.SUCCESS
-            );
+            return ToDto(customer);
         }
 
-        public async Task<ActionResponse<List<ResponseCustomerDto>?>> GetAll(int userId)
+        public async Task<PagedResult<ResponseCustomerDto>> GetAll(int userId, int page, int pageSize)
         {
-            var customers = await _repository.GetAll(userId);
+            (page, pageSize) = PaginationDefaults.Normalize(page, pageSize);
 
-            if (customers == null || customers.Count == 0)
-            {
-                return new ActionResponse<List<ResponseCustomerDto>?>(
-                    [],
-                    "No hay clientes registrados",
-                    Status.SUCCESS
-                );
-            }
+            var (customers, totalCount) = await _repository.GetAll(userId, page, pageSize);
+            var items = customers.Select(ToDto).ToList();
 
-            var responseDto = customers
-                .Select(c => new ResponseCustomerDto(
-                    c.Id,
-                    c.Name,
-                    c.Email,
-                    c.PhoneNumber,
-                    c.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid, r.Cost)).ToList() ?? []
-                ))
-                .ToList();
-
-            return new ActionResponse<List<ResponseCustomerDto>?>(
-                responseDto,
-                "Listado de clientes obtenido con éxito",
-                Status.SUCCESS
-            );
+            return new PagedResult<ResponseCustomerDto>(items, page, pageSize, totalCount);
         }
 
-        public async Task<ActionResponse<ResponseCustomerDto?>> GetById(int id, int userId)
+        public async Task<ResponseCustomerDto> GetById(int id, int userId)
         {
-            var customer = await _repository.GetById(id);
+            var customer = await _repository.GetById(id, userId)
+                ?? throw new NotFoundAppException("CUSTOMER_NOT_FOUND", $"Customer {id} was not found.");
 
-            if (customer == null || customer.UserId != userId)
-            {
-                return new ActionResponse<ResponseCustomerDto?>(
-                    null,
-                    $"El cliente con ID {id} no existe.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var responseDto = new ResponseCustomerDto(
-                customer.Id,
-                customer.Name,
-                customer.Email,
-                customer.PhoneNumber,
-                customer.Reports?.Select(r => new ResponseReportDto(r.Id, r.CustomerId, r.Date, r.Details, r.IsCompleted, r.IsPaid, r.Cost)).ToList() ?? []
-            );
-
-            return new ActionResponse<ResponseCustomerDto?>(responseDto, "Cliente encontrado con éxito", Status.FOUND);
+            return ToDto(customer);
         }
+
+        private static ResponseCustomerDto ToDto(Customer customer) => new(
+            customer.Id,
+            customer.Name,
+            customer.Email,
+            customer.PhoneNumber,
+            customer.Reports?.Select(report => new ResponseReportDto(
+                report.Id, report.CustomerId, report.Date, report.Details, report.IsCompleted, report.IsPaid, report.Cost)).ToList() ?? []
+        );
     }
 }

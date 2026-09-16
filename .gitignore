@@ -1,6 +1,15 @@
 # .NET
 bin/
 obj/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Local secrets (real values — see README.md for the template)
+fix-log-api/src/Api/appsettings.json
+fix-log-api/src/Api/appsettings.Development.json
+.env
 *.user
 *.suo
 .vs/
@@ -40,7 +49,6 @@ app.*.map.json
 
 # Miscellaneous
 *.class
-*.log
 *.pyc
 *.swp
 .DS_Store

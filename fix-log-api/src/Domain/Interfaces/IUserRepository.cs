@@ -5,6 +5,6 @@ namespace fix_log_api.Domain.Interfaces
     public interface IUserRepository
     {
         Task<User?> GetByEmail(string email);
-        Task<bool> Create(User user);
+        Task Create(User user);
     }
 }

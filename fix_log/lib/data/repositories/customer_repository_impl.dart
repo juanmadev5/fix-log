@@ -1,6 +1,6 @@
 import '../../domain/models/customer.dart';
-import '../../domain/repositories/customer_repository.dart';
-import '../datasources/customer_remote_data_source.dart';
+import '../services/customer_remote_data_source.dart';
+import 'customer_repository.dart';
 
 class CustomerRepositoryImpl implements CustomerRepository {
   CustomerRepositoryImpl(this._dataSource);

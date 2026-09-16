@@ -1,18 +1,21 @@
+using fix_log_api.Application.Common;
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Common;
 using fix_log_api.Domain.Entities;
+using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace fix_log_api.Application.Services
 {
-    public class ExpenseService(IExpenseRepository repository) : IExpenseService
+    public class ExpenseService(IExpenseRepository repository, ILogger<ExpenseService> logger) : IExpenseService
     {
         private readonly IExpenseRepository _repository = repository;
+        private readonly ILogger<ExpenseService> _logger = logger;
 
-        public async Task<ActionResponse<ResponseExpenseDto>> Create(CreateExpenseDto dto, int userId)
+        public async Task<ResponseExpenseDto> Create(CreateExpenseDto dto, int userId)
         {
-            var expenseEntity = new Expense
+            var expense = new Expense
             {
                 UserId = userId,
                 Title = dto.Title,
@@ -21,75 +24,26 @@ namespace fix_log_api.Application.Services
                 Quantity = dto.Quantity,
             };
 
-            bool success = await _repository.Create(expenseEntity);
+            await _repository.Create(expense);
+            _logger.LogInformation("Expense {ExpenseId} created for user {UserId}", expense.Id, userId);
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseExpenseDto>(
-                    null,
-                    "No se pudo guardar el gasto en la base de datos",
-                    Status.FAILED
-                );
-            }
-
-            var responseDto = new ResponseExpenseDto(
-                expenseEntity.Id,
-                expenseEntity.Title,
-                expenseEntity.Details,
-                expenseEntity.Price,
-                expenseEntity.Quantity
-            );
-
-            return new ActionResponse<ResponseExpenseDto>(
-                responseDto,
-                "Gasto registrado con éxito",
-                Status.SUCCESS
-            );
+            return ToDto(expense);
         }
 
-        public async Task<ActionResponse<bool>> Delete(int id, int userId)
+        public async Task Delete(int id, int userId)
         {
-            var expense = await _repository.GetById(id);
+            var deleted = await _repository.Delete(id, userId);
+            if (!deleted)
+                throw new NotFoundAppException("EXPENSE_NOT_FOUND", $"Expense {id} was not found.");
 
-            if (expense == null || expense.UserId != userId)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el gasto. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            bool success = await _repository.Delete(id);
-
-            if (!success)
-            {
-                return new ActionResponse<bool>(
-                    false,
-                    $"No se pudo eliminar el gasto. El ID {id} no fue encontrado.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<bool>(true, "Gasto eliminado correctamente", Status.SUCCESS);
+            _logger.LogInformation("Expense {ExpenseId} deleted for user {UserId}", id, userId);
         }
 
-        public async Task<ActionResponse<ResponseExpenseDto>> Edit(ResponseExpenseDto dto, int userId)
+        public async Task<ResponseExpenseDto> Edit(int id, CreateExpenseDto dto, int userId)
         {
-            var existing = await _repository.GetById(dto.Id);
-
-            if (existing == null || existing.UserId != userId)
+            var expense = new Expense
             {
-                return new ActionResponse<ResponseExpenseDto>(
-                    dto,
-                    "No se pudo actualizar el gasto. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var expenseEntity = new Expense
-            {
-                Id = dto.Id,
+                Id = id,
                 UserId = userId,
                 Title = dto.Title,
                 Details = dto.Details,
@@ -97,70 +51,32 @@ namespace fix_log_api.Application.Services
                 Quantity = dto.Quantity,
             };
 
-            bool success = await _repository.Edit(expenseEntity);
+            var updated = await _repository.Edit(expense);
+            if (!updated)
+                throw new NotFoundAppException("EXPENSE_NOT_FOUND", $"Expense {id} was not found.");
 
-            if (!success)
-            {
-                return new ActionResponse<ResponseExpenseDto>(
-                    dto,
-                    "No se pudo actualizar el gasto. Es posible que el ID no exista.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            return new ActionResponse<ResponseExpenseDto>(
-                dto,
-                "Gasto actualizado correctamente",
-                Status.SUCCESS
-            );
+            return ToDto(expense);
         }
 
-        public async Task<ActionResponse<List<ResponseExpenseDto>?>> GetAll(int userId)
+        public async Task<PagedResult<ResponseExpenseDto>> GetAll(int userId, int page, int pageSize)
         {
-            var expenses = await _repository.GetAll(userId);
+            (page, pageSize) = PaginationDefaults.Normalize(page, pageSize);
 
-            if (expenses == null || expenses.Count == 0)
-            {
-                return new ActionResponse<List<ResponseExpenseDto>?>(
-                    [],
-                    "No hay gastos registrados",
-                    Status.SUCCESS
-                );
-            }
+            var (expenses, totalCount) = await _repository.GetAll(userId, page, pageSize);
+            var items = expenses.Select(ToDto).ToList();
 
-            var responseDto = expenses
-                .Select(e => new ResponseExpenseDto(e.Id, e.Title, e.Details, e.Price, e.Quantity))
-                .ToList();
-
-            return new ActionResponse<List<ResponseExpenseDto>?>(
-                responseDto,
-                "Listado de gastos obtenido con éxito",
-                Status.SUCCESS
-            );
+            return new PagedResult<ResponseExpenseDto>(items, page, pageSize, totalCount);
         }
 
-        public async Task<ActionResponse<ResponseExpenseDto?>> GetById(int id, int userId)
+        public async Task<ResponseExpenseDto> GetById(int id, int userId)
         {
-            var expense = await _repository.GetById(id);
+            var expense = await _repository.GetById(id, userId)
+                ?? throw new NotFoundAppException("EXPENSE_NOT_FOUND", $"Expense {id} was not found.");
 
-            if (expense == null || expense.UserId != userId)
-            {
-                return new ActionResponse<ResponseExpenseDto?>(
-                    null,
-                    $"El Gasto con ID {id} no existe.",
-                    Status.NOT_FOUND
-                );
-            }
-
-            var responseDto = new ResponseExpenseDto(
-                expense.Id,
-                expense.Title,
-                expense.Details,
-                expense.Price,
-                expense.Quantity
-            );
-
-            return new ActionResponse<ResponseExpenseDto?>(responseDto, "Gasto encontrado con éxito", Status.FOUND);
+            return ToDto(expense);
         }
+
+        private static ResponseExpenseDto ToDto(Expense expense) =>
+            new(expense.Id, expense.Title, expense.Details, expense.Price, expense.Quantity);
     }
 }

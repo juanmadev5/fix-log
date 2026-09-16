@@ -1,7 +1,7 @@
 ﻿using fix_log_api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace fix_log_api.Infraestructure.Data
+namespace fix_log_api.Infrastructure.Data
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
@@ -26,16 +26,7 @@ namespace fix_log_api.Infraestructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
-
-            modelBuilder.Entity<Expense>()
-                .ToTable(t => t.HasCheckConstraint("CK_Expense_Price", "\"Price\" > 0"))
-                .ToTable(t => t.HasCheckConstraint("CK_Expense_Quantity", "\"Quantity\" > 0"));
-
-            modelBuilder.Entity<Report>()
-                .ToTable(t => t.HasCheckConstraint("CK_Report_Cost", "\"Cost\" >= 0"));
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
 
         private void SetTimestamps()

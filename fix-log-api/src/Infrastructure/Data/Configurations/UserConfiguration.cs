@@ -2,7 +2,7 @@ using fix_log_api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace fix_log_api.Infraestructure.Data.Configurations
+namespace fix_log_api.Infrastructure.Data.Configurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {
