@@ -3,7 +3,6 @@ using fix_log_api.Application.Services;
 using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -32,7 +31,7 @@ public class CustomerServiceTests
         var result = await _service.GetAll(1, 1, 20);
 
         // Then
-        result.Items.Should().ContainSingle();
+        Assert.Single(result.Items);
     }
 
     [Fact]
@@ -45,7 +44,7 @@ public class CustomerServiceTests
         var result = await _service.GetAll(1, 1, 20);
 
         // Then
-        result.Items.Should().BeEmpty();
+        Assert.Empty(result.Items);
     }
 
     [Fact]
@@ -58,7 +57,7 @@ public class CustomerServiceTests
         var result = await _service.GetAll(1, 1, 1000);
 
         // Then
-        result.PageSize.Should().Be(100);
+        Assert.Equal(100, result.PageSize);
         _repo.Verify(repository => repository.GetAll(1, 1, 100), Times.Once);
     }
 
@@ -72,7 +71,7 @@ public class CustomerServiceTests
         var result = await _service.GetAll(1, 0, 20);
 
         // Then
-        result.Page.Should().Be(1);
+        Assert.Equal(1, result.Page);
         _repo.Verify(repository => repository.GetAll(1, 1, 20), Times.Once);
     }
 
@@ -87,7 +86,7 @@ public class CustomerServiceTests
         var result = await _service.GetById(1, userId: 1);
 
         // Then
-        result.Id.Should().Be(1);
+        Assert.Equal(1, result.Id);
     }
 
     [Fact]
@@ -100,7 +99,7 @@ public class CustomerServiceTests
         var act = () => _service.GetById(1, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 
     [Fact]
@@ -113,7 +112,7 @@ public class CustomerServiceTests
         var result = await _service.Create(new CreateCustomerDto("Juan", "juan@test.com", "123"), userId: 1);
 
         // Then
-        result.Name.Should().Be("Juan");
+        Assert.Equal("Juan", result.Name);
     }
 
     [Fact]
@@ -126,7 +125,7 @@ public class CustomerServiceTests
         var act = () => _service.Delete(1, userId: 1);
 
         // Then
-        await act.Should().NotThrowAsync();
+        await act();
     }
 
     [Fact]
@@ -139,7 +138,7 @@ public class CustomerServiceTests
         var act = () => _service.Delete(1, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 
     [Fact]
@@ -154,6 +153,6 @@ public class CustomerServiceTests
         var act = () => _service.Edit(1, dto, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 }

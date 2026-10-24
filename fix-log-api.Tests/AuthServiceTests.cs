@@ -4,7 +4,6 @@ using fix_log_api.Application.Services;
 using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -41,8 +40,8 @@ public class AuthServiceTests
         var result = await _service.Register(new RegisterDto("new@test.com", "password123"));
 
         // Then
-        result.Token.Should().NotBeNullOrEmpty();
-        result.Email.Should().Be("new@test.com");
+        Assert.False(string.IsNullOrEmpty(result.Token));
+        Assert.Equal("new@test.com", result.Email);
     }
 
     [Fact]
@@ -56,7 +55,7 @@ public class AuthServiceTests
         var act = () => _service.Register(new RegisterDto("existing@test.com", "password123"));
 
         // Then
-        await act.Should().ThrowAsync<ConflictAppException>();
+        await Assert.ThrowsAsync<ConflictAppException>(act);
         _repo.Verify(repository => repository.Create(It.IsAny<User>()), Times.Never);
     }
 
@@ -70,7 +69,7 @@ public class AuthServiceTests
         var act = () => _service.Login(new LoginDto("missing@test.com", "password"));
 
         // Then
-        await act.Should().ThrowAsync<InvalidCredentialsException>();
+        await Assert.ThrowsAsync<InvalidCredentialsException>(act);
     }
 
     [Fact]
@@ -85,7 +84,7 @@ public class AuthServiceTests
         var result = await _service.Login(new LoginDto("user@test.com", "password123"));
 
         // Then
-        result.Token.Should().NotBeNullOrEmpty();
+        Assert.False(string.IsNullOrEmpty(result.Token));
     }
 
     [Fact]
@@ -100,6 +99,6 @@ public class AuthServiceTests
         var act = () => _service.Login(new LoginDto("user@test.com", "wrong_password"));
 
         // Then
-        await act.Should().ThrowAsync<InvalidCredentialsException>();
+        await Assert.ThrowsAsync<InvalidCredentialsException>(act);
     }
 }

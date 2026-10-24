@@ -3,7 +3,6 @@ using fix_log_api.Application.Services;
 using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -29,7 +28,7 @@ public class ExpenseServiceTests
         var result = await _service.Create(new CreateExpenseDto("Gasolina", "Combustible", 50000f, 1), userId: 1);
 
         // Then
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
     }
 
     [Fact]
@@ -44,7 +43,7 @@ public class ExpenseServiceTests
         var result = await _service.Edit(1, dto, userId: 1);
 
         // Then
-        result.Title.Should().Be("Gasolina Premium");
+        Assert.Equal("Gasolina Premium", result.Title);
     }
 
     [Fact]
@@ -59,7 +58,7 @@ public class ExpenseServiceTests
         var act = () => _service.Edit(1, dto, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 
     [Fact]
@@ -72,7 +71,7 @@ public class ExpenseServiceTests
         var result = await _service.GetAll(1, 1, 20);
 
         // Then
-        result.Items.Should().BeEmpty();
+        Assert.Empty(result.Items);
     }
 
     [Fact]
@@ -85,6 +84,6 @@ public class ExpenseServiceTests
         var act = () => _service.Delete(1, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 }
