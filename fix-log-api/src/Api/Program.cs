@@ -19,6 +19,7 @@ using Npgsql;
 using Scalar.AspNetCore;
 using Serilog;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -35,6 +36,7 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 

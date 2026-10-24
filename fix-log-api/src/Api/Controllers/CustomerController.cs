@@ -20,7 +20,7 @@ namespace fix_log_api.Api.Controllers
         /// <summary>Lists the authenticated user's customers, paginated.</summary>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResult<ResponseCustomerDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] int page = PaginationDefaults.DefaultPage, [FromQuery] int pageSize = PaginationDefaults.DefaultPageSize)
+        public async Task<IActionResult> GetAll([FromQuery] int page = PaginationDefaults.DefaultPage, [FromQuery(Name = "page_size")] int pageSize = PaginationDefaults.DefaultPageSize)
         {
             var result = await _service.GetAll(GetUserId(), page, pageSize);
             return Ok(result);

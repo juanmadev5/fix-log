@@ -12,7 +12,7 @@ class ExpenseRemoteDataSourceHttp implements ExpenseRemoteDataSource {
 
   @override
   Future<List<Expense>> fetchExpenses() async {
-    final uri = Uri.parse('$fixLogApiBaseUrl$expensesPath?page=1&pageSize=100');
+    final uri = Uri.parse('$fixLogApiBaseUrl$expensesPath?page=1&page_size=100');
     final response = await _client.get(uri);
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final items = body['items'] as List<dynamic>;

@@ -13,7 +13,7 @@ class CustomerRemoteDataSourceHttp implements CustomerRemoteDataSource {
   @override
   Future<List<Customer>> fetchCustomers() async {
     final uri = Uri.parse(
-      '$fixLogApiBaseUrl$customersPath?page=1&pageSize=100',
+      '$fixLogApiBaseUrl$customersPath?page=1&page_size=100',
     );
     final response = await _client.get(uri);
     final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -33,7 +33,7 @@ class CustomerRemoteDataSourceHttp implements CustomerRemoteDataSource {
     final response = await _client.post(uri, {
       'name': name,
       'email': email,
-      'phoneNumber': phoneNumber,
+      'phone_number': phoneNumber,
     });
     return Customer.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
