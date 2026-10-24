@@ -3,7 +3,6 @@ using fix_log_api.Application.Services;
 using fix_log_api.Domain.Entities;
 using fix_log_api.Domain.Exceptions;
 using fix_log_api.Domain.Interfaces;
-using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -39,7 +38,7 @@ public class ReportServiceTests
         var result = await _service.Create(dto, userId: 1);
 
         // Then
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
     }
 
     [Fact]
@@ -54,7 +53,7 @@ public class ReportServiceTests
         var act = () => _service.Create(dto, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
         _repo.Verify(repository => repository.Create(It.IsAny<Report>()), Times.Never);
     }
 
@@ -70,7 +69,7 @@ public class ReportServiceTests
         var act = () => _service.Edit(1, dto, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
         _repo.Verify(repository => repository.Edit(It.IsAny<Report>()), Times.Never);
     }
 
@@ -84,7 +83,7 @@ public class ReportServiceTests
         var act = () => _service.Delete(1, userId: 1);
 
         // Then
-        await act.Should().NotThrowAsync();
+        await act();
     }
 
     [Fact]
@@ -97,7 +96,7 @@ public class ReportServiceTests
         var act = () => _service.Delete(1, userId: 99);
 
         // Then
-        await act.Should().ThrowAsync<NotFoundAppException>();
+        await Assert.ThrowsAsync<NotFoundAppException>(act);
     }
 
     [Fact]
@@ -113,6 +112,6 @@ public class ReportServiceTests
         var result = await _service.GetAll(1, 1, 20);
 
         // Then
-        result.Items.Should().ContainSingle();
+        Assert.Single(result.Items);
     }
 }

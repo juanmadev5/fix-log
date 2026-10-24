@@ -20,22 +20,22 @@ class Report {
   factory Report.fromJson(Map<String, dynamic> json) {
     return Report(
       id: json['id'] as int,
-      customerId: json['customerId'] as int,
+      customerId: json['customer_id'] as int,
       date: DateTime.parse(json['date'] as String),
       details: json['details'] as String,
-      isCompleted: json['isCompleted'] as bool,
-      isPaid: json['isPaid'] as bool,
+      isCompleted: json['is_completed'] as bool,
+      isPaid: json['is_paid'] as bool,
       cost: (json['cost'] as num?)?.toDouble() ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'customerId': customerId,
+      'customer_id': customerId,
       'date': date.toIso8601String(),
       'details': details,
-      'isCompleted': isCompleted,
-      'isPaid': isPaid,
+      'is_completed': isCompleted,
+      'is_paid': isPaid,
       'cost': cost,
     };
   }

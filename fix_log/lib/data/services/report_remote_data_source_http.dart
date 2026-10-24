@@ -12,7 +12,7 @@ class ReportRemoteDataSourceHttp implements ReportRemoteDataSource {
 
   @override
   Future<List<Report>> fetchReports() async {
-    final uri = Uri.parse('$fixLogApiBaseUrl$reportsPath?page=1&pageSize=100');
+    final uri = Uri.parse('$fixLogApiBaseUrl$reportsPath?page=1&page_size=100');
     final response = await _client.get(uri);
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     final items = body['items'] as List<dynamic>;
@@ -32,11 +32,11 @@ class ReportRemoteDataSourceHttp implements ReportRemoteDataSource {
   ) async {
     final uri = Uri.parse('$fixLogApiBaseUrl$reportsPath');
     final response = await _client.post(uri, {
-      'customerId': customerId,
+      'customer_id': customerId,
       'date': date.toIso8601String(),
       'details': details,
-      'isCompleted': isCompleted,
-      'isPaid': isPaid,
+      'is_completed': isCompleted,
+      'is_paid': isPaid,
       'cost': cost,
     });
     return Report.fromJson(jsonDecode(response.body) as Map<String, dynamic>);

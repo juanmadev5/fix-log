@@ -22,7 +22,7 @@ class Customer {
       id: json['id'] as int,
       name: json['name'] as String,
       email: json['email'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      phoneNumber: json['phone_number'] as String,
       reports: reportsJson != null
           ? reportsJson
                 .map((item) => Report.fromJson(item as Map<String, dynamic>))
@@ -32,6 +32,6 @@ class Customer {
   }
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'email': email, 'phoneNumber': phoneNumber};
+    return {'name': name, 'email': email, 'phone_number': phoneNumber};
   }
 }

@@ -1,11 +1,18 @@
 using fix_log_api.Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace fix_log_api.Api.Middleware
 {
     /// <summary>Maps every unhandled exception to a single, consistent RFC 7807 response shape.</summary>
-    public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+    /// <remarks>
+    /// Serializes via the same <see cref="JsonOptions"/> the controllers use (configured once in
+    /// Program.cs) rather than letting <c>WriteAsJsonAsync</c> fall back to ASP.NET Core's own
+    /// "web defaults" (camelCase) — <c>Microsoft.AspNetCore.Mvc.JsonOptions</c> only feeds MVC's
+    /// formatters, it is not picked up automatically by a raw <c>HttpResponse.WriteAsJsonAsync</c> call.
+    /// </remarks>
+    public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IOptions<JsonOptions> jsonOptions) : IExceptionHandler
     {
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
@@ -36,7 +43,7 @@ namespace fix_log_api.Api.Middleware
             }
 
             httpContext.Response.StatusCode = statusCode;
-            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, jsonOptions.Value.JsonSerializerOptions, cancellationToken);
 
             return true;
         }
