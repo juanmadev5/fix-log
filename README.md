@@ -133,7 +133,7 @@ fix-log/
 │           ├── Controllers/
 │           ├── Middleware/
 │           └── Program.cs
-├── fix-log-api.Tests/      # Tests unitarios (xUnit + Moq + FluentAssertions)
+├── fix-log-api.Tests/      # Tests unitarios (xUnit + Moq)
 └── fix_log/                # App Flutter
     └── lib/
         ├── core/            # DI (GetIt), router, logger, error boundary
@@ -287,23 +287,23 @@ Todos los endpoints están versionados vía la URL (`/api/v1/...`). Un cambio qu
 |--------|------|------|-------------|
 | POST | `/api/v1/auth/register` | No | Registrar usuario (rate limited) |
 | POST | `/api/v1/auth/login` | No | Iniciar sesión (rate limited) |
-| GET | `/api/v1/customer?page=&pageSize=` | Sí | Listar clientes (paginado) |
+| GET | `/api/v1/customer?page=&page_size=` | Sí | Listar clientes (paginado) |
 | GET | `/api/v1/customer/{id}` | Sí | Obtener cliente |
 | POST | `/api/v1/customer` | Sí | Crear cliente |
 | PUT | `/api/v1/customer/{id}` | Sí | Editar cliente |
 | DELETE | `/api/v1/customer/{id}` | Sí | Eliminar cliente |
-| GET | `/api/v1/expense?page=&pageSize=` | Sí | Listar gastos (paginado) |
+| GET | `/api/v1/expense?page=&page_size=` | Sí | Listar gastos (paginado) |
 | GET | `/api/v1/expense/{id}` | Sí | Obtener gasto |
 | POST | `/api/v1/expense` | Sí | Crear gasto |
 | PUT | `/api/v1/expense/{id}` | Sí | Editar gasto |
 | DELETE | `/api/v1/expense/{id}` | Sí | Eliminar gasto |
-| GET | `/api/v1/report?page=&pageSize=` | Sí | Listar reportes (paginado) |
+| GET | `/api/v1/report?page=&page_size=` | Sí | Listar reportes (paginado) |
 | GET | `/api/v1/report/{id}` | Sí | Obtener reporte |
 | POST | `/api/v1/report` | Sí | Crear reporte |
 | PUT | `/api/v1/report/{id}` | Sí | Editar reporte |
 | DELETE | `/api/v1/report/{id}` | Sí | Eliminar reporte |
 
-Los endpoints de listado aceptan `page` (default `1`) y `pageSize` (default `20`, máximo `100`), y devuelven `{ items, page, pageSize, totalCount, totalPages }`.
+Los endpoints de listado aceptan `page` (default `1`) y `page_size` (default `20`, máximo `100`), y devuelven `{ items, page, page_size, total_count, total_pages }`.
 
 Los endpoints marcados con **Sí** requieren el header `Authorization: Bearer <token>`. El token se obtiene en `/api/v1/auth/login` o `/api/v1/auth/register`.
 
