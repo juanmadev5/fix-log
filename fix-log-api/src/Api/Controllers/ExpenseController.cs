@@ -2,7 +2,6 @@ using Asp.Versioning;
 using fix_log_api.Application.Common;
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,8 +42,7 @@ namespace fix_log_api.Api.Controllers
         public async Task<IActionResult> Create(CreateExpenseDto dto)
         {
             var validation = await _validator.ValidateAsync(dto);
-            if (!validation.IsValid)
-                throw new ValidationFailedException(validation.Errors.Select(error => new FieldError(error.PropertyName, error.ErrorMessage)).ToList());
+            validation.ThrowIfInvalid();
 
             var result = await _service.Create(dto, GetUserId());
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
@@ -58,8 +56,7 @@ namespace fix_log_api.Api.Controllers
         public async Task<IActionResult> Edit(int id, CreateExpenseDto dto)
         {
             var validation = await _validator.ValidateAsync(dto);
-            if (!validation.IsValid)
-                throw new ValidationFailedException(validation.Errors.Select(error => new FieldError(error.PropertyName, error.ErrorMessage)).ToList());
+            validation.ThrowIfInvalid();
 
             var result = await _service.Edit(id, dto, GetUserId());
             return Ok(result);
