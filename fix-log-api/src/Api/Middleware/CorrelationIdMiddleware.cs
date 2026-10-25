@@ -12,7 +12,15 @@ namespace fix_log_api.Api.Middleware
                 ? existing.ToString()
                 : Guid.NewGuid().ToString();
 
-            context.Response.Headers[HeaderName] = correlationId;
+            // Set via OnStarting, not directly: the exception-handling middleware resets the
+            // response (clearing headers already set here) before an IExceptionHandler writes an
+            // error body, so an immediate assignment is silently lost on every error response.
+            // OnStarting runs right before headers are actually sent, after that reset.
+            context.Response.OnStarting(() =>
+            {
+                context.Response.Headers[HeaderName] = correlationId;
+                return Task.CompletedTask;
+            });
 
             using (LogContext.PushProperty("CorrelationId", correlationId))
             {
