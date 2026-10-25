@@ -40,6 +40,16 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+// MVC's JsonOptions above only governs controller request/response bodies - it has no effect on
+// the generated OpenAPI schema. The schema is driven by this separate options object instead
+// (also what a bare HttpResponse.WriteAsJsonAsync falls back to), so it needs the same policy
+// or the Scalar/OpenAPI docs describe a camelCase contract while the API actually speaks snake_case.
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
 var defaultApiVersion = new ApiVersion(1);
 
 builder.Services.AddApiVersioning(options =>
