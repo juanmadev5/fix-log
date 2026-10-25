@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using fix_log_api.Application.DTOs;
 using fix_log_api.Application.Interfaces;
-using fix_log_api.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -27,8 +26,7 @@ namespace fix_log_api.Api.Controllers
         public async Task<IActionResult> Register(RegisterDto dto)
         {
             var validation = await _registerValidator.ValidateAsync(dto);
-            if (!validation.IsValid)
-                throw new ValidationFailedException(validation.Errors.Select(error => new FieldError(error.PropertyName, error.ErrorMessage)).ToList());
+            validation.ThrowIfInvalid();
 
             var result = await _service.Register(dto);
             return Ok(result);
@@ -42,8 +40,7 @@ namespace fix_log_api.Api.Controllers
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var validation = await _loginValidator.ValidateAsync(dto);
-            if (!validation.IsValid)
-                throw new ValidationFailedException(validation.Errors.Select(error => new FieldError(error.PropertyName, error.ErrorMessage)).ToList());
+            validation.ThrowIfInvalid();
 
             var result = await _service.Login(dto);
             return Ok(result);
